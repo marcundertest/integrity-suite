@@ -63,6 +63,23 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 029
+
+- **Fecha**: 2026-03-05 00:35
+- **Requerimiento**: Blindar el test de "Commit Lockdown" para evitar bypasses por errores de formato o secciones vacías.
+- **Información adicional**: El test debe fallar si no encuentra la sección de historial o si no hay requerimientos registrados.
+- **Interpretación**:
+  1. Modificar `integrity-suite.test.ts` para que use `expect` positivos sobre la existencia de la sección y los bloques.
+  2. Asegurar que si el parser falla, el commit se bloquee.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/integrity-suite.test.ts` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 00:40 - ✅ Commit lockdown test reinforced and made fail-safe (version 1.3.2)
+
 ### Requerimiento 028
 
 - **Fecha**: 2026-03-05 00:25

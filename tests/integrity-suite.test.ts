@@ -156,17 +156,26 @@ describe('Integrity Suite', () => {
       const content = fs.readFileSync(reqPath, 'utf8');
 
       // Find the "## Historial de requerimientos" section to ignore templates
-      const historySection = content.split('## Historial de requerimientos')[1] || '';
+      const historyParts = content.split('## Historial de requerimientos');
+      expect(
+        historyParts.length,
+        'Missing "## Historial de requerimientos" section in requirements.md',
+      ).toBeGreaterThan(1);
+
+      const historySection = historyParts[1];
       const reqBlocks = historySection.split('### Requerimiento');
 
-      if (reqBlocks.length > 1) {
-        const latestReq = reqBlocks[1];
-        // Ensure it contains "- **Estado**: Aprobado"
-        expect(
-          latestReq,
-          'The latest requirement must be marked as Approved before committing.',
-        ).toContain('- **Estado**: Aprobado');
-      }
+      expect(
+        reqBlocks.length,
+        'No requirements found in history section of requirements.md',
+      ).toBeGreaterThan(1);
+
+      const latestReq = reqBlocks[1];
+      // Ensure it contains "- **Estado**: Aprobado"
+      expect(
+        latestReq,
+        'The latest requirement must be marked as Approved before committing.',
+      ).toContain('- **Estado**: Aprobado');
     });
 
     it('should have a zero-tolerance validation script with security audit', () => {
