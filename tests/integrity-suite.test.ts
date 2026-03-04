@@ -66,9 +66,8 @@ describe('Integrity Suite', () => {
       expect(content, 'CHANGELOG.md contains emojis').not.toMatch(emojiRegex);
 
       // Check for non-ASCII characters (Strict English/ASCII)
-      // eslint-disable-next-line no-control-regex
-      const nonAscii = /[^\u0000-\u007F]/;
-      expect(nonAscii.test(content), 'CHANGELOG.md contains non-English characters').toBe(false);
+      const isAscii = [...content].every((char) => char.charCodeAt(0) <= 127);
+      expect(isAscii, 'CHANGELOG.md contains non-English characters').toBe(true);
 
       expect(content).toContain('Changelog');
       expect(content).toContain('Added');
@@ -224,39 +223,34 @@ describe('Integrity Suite', () => {
   describe('Level 4: Hygiene & Global Standards', () => {
     it('should enforce English-only comments (ASCII)', () => {
       allSourceFiles.forEach((file) => {
-        const parts = file.split(path.sep);
-        if (parts.includes('integrity-suite.test.ts')) return;
         const content = fs.readFileSync(file, 'utf8');
         const commentRegex = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|<!--[\s\S]*?-->)/g;
         const comments = content.match(commentRegex);
         if (comments) {
           comments.forEach((comment) => {
-            // eslint-disable-next-line no-control-regex
-            const nonAscii = /[^\u0000-\u007F]/;
-            expect(nonAscii.test(comment), `Non-English comment in ${file}: "${comment}"`).toBe(
-              false,
-            );
+            const isAscii = [...comment].every((char) => char.charCodeAt(0) <= 127);
+            expect(isAscii, `Non-English comment in ${file}: "${comment}"`).toBe(true);
           });
         }
       });
     });
 
-    it('should forbit console.log/debug in source', () => {
+    it('should forbid print statments in source', () => {
       codeFiles.forEach((file) => {
         const parts = file.split(path.sep);
-        if (parts.includes('.integrity-suite') || parts.includes('integrity-suite.test.ts')) return;
+        if (parts.includes('.integrity-suite')) return;
         const content = fs.readFileSync(file, 'utf8');
-        expect(content, `Console usage in ${file}`).not.toMatch(/console\.(log|debug|info)/);
+        const consoleRegex = new RegExp('console\\.(log|debug|info)', 'i');
+        expect(content, `Console usage in ${file}`).not.toMatch(consoleRegex);
       });
     });
 
-    it('should forbid TODO/FIXME in non-markdown files', () => {
+    it('should forbid unresolved tasks in non-markdown files', () => {
       allSourceFiles.forEach((file) => {
         if (file.endsWith('.md') || file.endsWith('.json')) return;
-        const parts = file.split(path.sep);
-        if (parts.includes('integrity-suite.test.ts')) return;
         const content = fs.readFileSync(file, 'utf8');
-        expect(content, `Unresolved task in ${file}`).not.toMatch(/TODO|FIXME/i);
+        const ruleRegex = new RegExp('TO' + 'DO|FIX' + 'ME', 'i');
+        expect(content, `Unresolved task in ${file}`).not.toMatch(ruleRegex);
       });
     });
   });
@@ -318,7 +312,6 @@ describe('Integrity Suite', () => {
       allSourceFiles.forEach((file) => {
         const parts = file.split(path.sep);
         if (!parts.includes('tests')) return;
-        if (parts.includes('integrity-suite.test.ts')) return;
 
         const content = fs
           .readFileSync(file, 'utf8')
@@ -338,12 +331,10 @@ describe('Integrity Suite', () => {
 
     it('should forbid linter/formatter bypass directives', () => {
       allSourceFiles.forEach((file) => {
-        const parts = file.split(path.sep);
-        if (parts.includes('integrity-suite.test.ts')) return;
         const content = fs.readFileSync(file, 'utf8');
-        expect(content, `Bypass directive in ${file}`).not.toContain('eslint-disable');
-        expect(content, `Bypass directive in ${file}`).not.toContain('prettier-ignore');
-        expect(content, `Bypass directive in ${file}`).not.toContain('markdownlint-disable');
+        expect(content, `Bypass directive in ${file}`).not.toContain('eslint-' + 'disable');
+        expect(content, `Bypass directive in ${file}`).not.toContain('prettier-' + 'ignore');
+        expect(content, `Bypass directive in ${file}`).not.toContain('markdownlint-' + 'disable');
       });
     });
   });

@@ -63,6 +63,23 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 032
+
+- **Fecha**: 2026-03-05 01:15
+- **Requerimiento**: Eliminar las excepciones `integrity-suite.test.ts` de las propias validaciones del Integrity Suite.
+- **Información adicional**: Se deben construir las sentencias (como el escaneo de _bypass directives_ o mensajes TODO/Console) usando cadenas fraccionadas / lógicas dinámicas para que el archivo del test pueda pasar sus propias reglas de higiene.
+- **Interpretación**:
+  1. Eliminar las cláusulas `if (parts.includes('integrity-suite.test.ts')) return;` de los tests.
+  2. Implementar métodos de ofuscación (ej. `'eslint-' + 'disable'`) o chequeo de caracteres línea a línea (`every(char => char.charCodeAt <= 127)`) para evitar falsos positivos al leer el propio archivo de test.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/integrity-suite.test.ts` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 01:20 - ✅ Self-escapes removed and evaluated successfully using code obfuscation (version 1.3.5)
+
 ### Requerimiento 031
 
 - **Fecha**: 2026-03-05 01:00
