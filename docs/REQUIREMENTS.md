@@ -62,6 +62,22 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 003
+
+- **Fecha**: 2026-03-04 21:00
+- **Requerimiento**: Mejorar el flujo de pre-commit para evitar archivos modificados (como pnpm-lock.yaml) fuera del commit.
+- **Información adicional**: N/A
+- **Interpretación**: Optimizar `.husky/pre-commit` eliminando redundancias (prettier global),
+  forzando el uso de lockfiles inmutables durante validación, y asegurando que cambios
+  legítimos en metadatos (versión, lockfile) se incluyan en el commit.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `.husky/pre-commit` (estado: modificado)
+- **Tests**:
+  - `tests/strict-commits.test.ts` (estado: modificado)
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-04 21:05 - ✅ 19/19 tests passed (version 1.0.1)
+
 ### Requerimiento 002
 
 - **Fecha**: 2026-03-04 20:40

@@ -1,1 +1,4 @@
-npx prettier --write . && npx lint-staged && pnpm validate-project
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npx lint-staged && pnpm validate-project && git add pnpm-lock.yaml package.json
