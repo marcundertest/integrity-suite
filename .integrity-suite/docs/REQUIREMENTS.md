@@ -62,6 +62,22 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 025
+
+- **Fecha**: 2026-03-04 23:55
+- **Requerimiento**: Refinar `prompt.md` con prohibiciones explícitas sobre la Integrity Suite y obligación de mantenimiento del Changelog.
+- **Información adicional**: Cambios realizados directamente por el usuario.
+- **Interpretación**:
+  1. Validar que el prompt prohíba la modificación de tests de integridad.
+  2. Incluir el mantenimiento de `CHANGELOG.md` en las reglas del agente.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `.integrity-suite/docs/prompt.md` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 00:00 - ✅ Prompt refined with strict rules and maintenance duties (version 1.2.1)
+
 ### Requerimiento 024
 
 - **Fecha**: 2026-03-04 23:45
