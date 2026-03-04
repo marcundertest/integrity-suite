@@ -53,23 +53,46 @@ describe('Integrity Suite', () => {
       expect(fs.existsSync(changelogPath), 'CHANGELOG.md is missing').toBe(true);
       const content = fs.readFileSync(changelogPath, 'utf8');
 
-      // Check for emojis (simplified regex for common pictographs/emojis)
+      // Check for legal notice
+      expect(content, 'CHANGELOG.md missing language policy notice').toContain(
+        'strictly maintained in **English**',
+      );
+
+      // Check for emojis
       const emojiRegex =
         /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F191}-\u{1F251}\u{1F004}\u{1F0CF}\u{1F170}-\u{1F171}\u{1F17E}-\u{1F17F}\u{1F18E}\u{3030}\u{2B50}\u{2B55}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{3297}\u{3299}]/u;
       expect(content, 'CHANGELOG.md contains emojis').not.toMatch(emojiRegex);
 
-      // Check for non-ASCII characters (English only)
+      // Check for non-ASCII characters (Strict English/ASCII)
       // eslint-disable-next-line no-control-regex
       const nonAscii = /[^\u0000-\u007F]/;
       expect(nonAscii.test(content), 'CHANGELOG.md contains non-English characters').toBe(false);
-      // Note: We allow some special markdown characters if needed, but standard English ASCII is safer.
-      // Actually, standard Keep a Changelog might use some UTF-8 if names are non-English, but here we enforce ASCII for the content.
-      // But [Keep a Changelog] (https://...) contains non-ASCII punctuation sometimes. Let's be careful.
-      // Let's just check the headers and lists for English words.
+
       expect(content).toContain('Changelog');
       expect(content).toContain('Added');
       expect(content).toContain('Changed');
       expect(content).toContain('Fixed');
+    });
+
+    it('should have a REQUIREMENTS.md file in Spanish', () => {
+      const reqPath = path.join(rootDir, '.integrity-suite', 'docs', 'REQUIREMENTS.md');
+      expect(fs.existsSync(reqPath), 'REQUIREMENTS.md is missing').toBe(true);
+      const content = fs.readFileSync(reqPath, 'utf8');
+
+      // Check for legal notice
+      expect(content, 'REQUIREMENTS.md missing language policy notice').toContain(
+        'mantiene estrictamente en **castellano**',
+      );
+
+      // Check for Spanish keywords
+      expect(content).toContain('Historial de requerimientos');
+      expect(content).toContain('Interpretación');
+
+      // Check for at least some Spanish-specific character (optional but reinforces it's not plain ASCII)
+      const spanishChars = /[áéíóúñÁÉÍÓÚÑ]/;
+      expect(spanishChars.test(content), 'REQUIREMENTS.md should contain Spanish characters').toBe(
+        true,
+      );
     });
 
     it('should use PNPM and forbid obsolete npm/yarn lockfiles', () => {

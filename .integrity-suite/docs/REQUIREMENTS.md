@@ -1,7 +1,6 @@
 # Historial de requerimientos del usuario
 
-Este archivo contiene el historial de requerimientos del usuario, incluyendo su interpretación y los resultados de los
-tests.
+Este archivo contiene el historial de requerimientos del usuario, incluyendo su interpretación y los resultados de los tests. Este archivo se mantiene estrictamente en **castellano**.
 
 ## Plantillas
 
@@ -61,6 +60,24 @@ Este es un ejemplo:
 Los requerimientos deben estar ordenados cronológicamente (del más reciente al más antiguo).
 
 ## Historial de requerimientos
+
+### Requerimiento 026
+
+- **Fecha**: 2026-03-05 00:05
+- **Requerimiento**: Reforzar política de idiomas. Indicar inglés en `CHANGELOG.md` y castellano en `REQUIREMENTS.md`. Añadir tests de validación.
+- **Información adicional**: N/A
+- **Interpretación**:
+  1. Modificar cabeceras de `CHANGELOG.md` y `REQUIREMENTS.md`.
+  2. Actualizar `integrity-suite.test.ts` para verificar avisos legales y presencia de caracteres específicos.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `CHANGELOG.md` (estado: modificado)
+  - `.integrity-suite/docs/REQUIREMENTS.md` (estado: modificado)
+  - `tests/integrity-suite.test.ts` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 00:10 - ✅ Language policies reinforced and tested (version 1.2.2)
 
 ### Requerimiento 025
 

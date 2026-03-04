@@ -1,9 +1,16 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project will be documented in this file. This file is strictly maintained in **English** and must only contain **ASCII** characters.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.2.2] - 2026-03-04
+
+### Changed
+
+- Reinforced language policy enforcement by explicitly stating requirements in `CHANGELOG.md` and `REQUIREMENTS.md`.
+- Added automated tests to ensure `CHANGELOG.md` remains in English (ASCII) and `REQUIREMENTS.md` remains in Spanish.
 
 ## [1.2.1] - 2026-03-04
 
