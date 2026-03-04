@@ -1,0 +1,61 @@
+{
+  "name": "ai-developer-kit",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI-powered developer kit for automated coding and project setup.",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "mdlint": "markdownlint .",
+    "check-version": "node scripts/check-version.js",
+    "validate-project": "pnpm lint && pnpm mdlint && tsc --noEmit && pnpm test && pnpm check-version",
+    "prepare": "husky"
+  },
+  "author": "Marc Galindo (marcundertest) - https://marcundertest.com",
+  "license": "SEE LICENSE IN LICENSE",
+  "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@types/node": "^25.3.3",
+    "@typescript-eslint/eslint-plugin": "^7.11.0",
+    "@typescript-eslint/parser": "^7.11.0",
+    "@vitest/ui": "^1.6.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.5",
+    "markdownlint-cli": "^0.41.0",
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "packageManager": "pnpm@10.18.0",
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write",
+      "vitest related --run --passWithNoTests"
+    ],
+    "*.md": [
+      "markdownlint --fix",
+      "prettier --write"
+    ],
+    "*.{js,json,css}": [
+      "prettier --write"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "scope-enum": [
+        2,
+        "never"
+      ]
+    }
+  }
+}
