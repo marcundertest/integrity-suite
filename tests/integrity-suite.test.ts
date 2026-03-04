@@ -22,7 +22,11 @@ describe('Integrity Suite', () => {
         }
       } else {
         const ext = path.extname(name);
-        if (['.ts', '.js', '.tsx', '.jsx', '.html', '.css'].includes(ext)) {
+        const base = path.basename(name);
+        if (
+          ['.ts', '.js', '.tsx', '.jsx', '.html', '.css', '.json'].includes(ext) ||
+          base.startsWith('.env')
+        ) {
           allFiles.push(name);
         }
       }
@@ -30,8 +34,11 @@ describe('Integrity Suite', () => {
     return allFiles;
   };
 
-  const codeFiles = getFiles(rootDir).filter((f) => !f.split(path.sep).includes('tests'));
   const allSourceFiles = getFiles(rootDir);
+  const codeFiles = allSourceFiles.filter((f) => {
+    const ext = path.extname(f);
+    return ['.ts', '.js', '.tsx', '.jsx'].includes(ext) && !f.split(path.sep).includes('tests');
+  });
   const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
 
   describe('Level 0: Base Environment & Cleanup', () => {
@@ -250,7 +257,7 @@ describe('Integrity Suite', () => {
 
     it('should forbid TODO/FIXME in non-markdown files', () => {
       allSourceFiles.forEach((file) => {
-        if (file.endsWith('.md')) return;
+        if (file.endsWith('.md') || file.endsWith('.json')) return;
         const parts = file.split(path.sep);
         if (parts.includes('integrity-suite.test.ts')) return;
         const content = fs.readFileSync(file, 'utf8');
@@ -289,15 +296,25 @@ describe('Integrity Suite', () => {
     });
 
     it('should detect potential hardcoded secrets', () => {
-      const patterns = [/api[_-]?key/i, /secret[_-]?key/i, /password/i, /token/i];
-      codeFiles.forEach((file) => {
+      const keys = [
+        'api[_-]?key',
+        'secret[_-]?key',
+        'password',
+        'token',
+        'private[_-]?key',
+        'auth[_-]?key',
+      ];
+      const patterns = keys.map(
+        (key) => new RegExp(`(['"]?${key}['"]?)\\s*[:=]\\s*['"][\\w\\-/+=]{8,}['"]`, 'i'),
+      );
+
+      allSourceFiles.forEach((file) => {
+        const base = path.basename(file);
+        if (base === '.env' || file.endsWith('.md')) return;
+
         const content = fs.readFileSync(file, 'utf8');
         patterns.forEach((pattern) => {
-          const assignmentRegex = new RegExp(
-            `${pattern.source}\\s*[:=]\\s*['"][\\w-]{8,}['"]`,
-            'i',
-          );
-          expect(content, `Hardcoded secret in ${file}`).not.toMatch(assignmentRegex);
+          expect(content, `Potential hardcoded secret in ${file}`).not.toMatch(pattern);
         });
       });
     });

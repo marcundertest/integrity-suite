@@ -63,6 +63,23 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 030
+
+- **Fecha**: 2026-03-05 00:45
+- **Requerimiento**: Mejorar la detección de secretos hardcodeados: incluir archivos `.json` y `.env*`, y ampliar el patrón de escaneo para detectar objetos, arrays y Base64.
+- **Información adicional**: N/A
+- **Interpretación**:
+  1. Actualizar `integrity-suite.test.ts` para incluir extensiones de configuración (`.json`, `.env.example`, etc.) en el escaneo de seguridad.
+  2. Implementar un patrón de búsqueda de secretos más robusto que no se limite a asignaciones simples y que detecte cadenas de alta entropía o formatos comunes de "leaks".
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/integrity-suite.test.ts` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 00:50 - ✅ Secret detection enhanced and verified with config files and objects (version 1.3.3)
+
 ### Requerimiento 029
 
 - **Fecha**: 2026-03-05 00:35
