@@ -65,7 +65,9 @@ una colaboración eficiente para resolver problemas y cumplir con los requerimie
   del usuario.
 - El agente NO realiza commits de forma autónoma.
 - El agente sugiere un mensaje de commit cada vez que habla con el usuario y hay cambios, y pide autorización para efectuarlo.
-- El agente SOLO realiza commits cuando el usuario lo autoriza.
+- El usuario autoriza el commit cambiando el campo **Estado** a **Aprobado** en el último requerimiento de `REQUIREMENTS.md`.
+- La Integrity Suite bloquea cualquier commit si el último requerimiento no está **Aprobado**.
+- El agente SOLO realiza commits cuando el usuario lo autoriza y el estado es **Aprobado**.
 
 ## Reglas estrictas para el usuario
 

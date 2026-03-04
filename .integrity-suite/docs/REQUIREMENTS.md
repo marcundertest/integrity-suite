@@ -18,6 +18,7 @@ Utilizar la siguiente plantilla para cada requerimiento que sea testeable:
   - `[ruta del archivo]` (estado: [creado|modificado|eliminado])
 - **Tests**:
   - `[ruta del test]` (estado: [creado|modificado|eliminado])
+- **Estado**: [Pendiente|Aprobado]
 - **Resultados de los tests**:
   - **Iteración [ID]**: yyyy-MM-dd HH:mm - [Resultado]
 ```
@@ -34,6 +35,7 @@ Y la siguiente para cada requerimiento que no sea testeable:
 - **Testeable**: false
 - **Archivos afectados**:
   - `[ruta del archivo]` (estado: [creado|modificado|eliminado])
+- **Estado**: [Pendiente|Aprobado]
 - **Razón**: [Razón por la cual no es testeable]
 ```
 
@@ -61,6 +63,26 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 027
+
+- **Fecha**: 2026-03-05 00:15
+- **Requerimiento**: Evitar que el agente commitee sin aprobación expresa.
+- **Información adicional**: El usuario debe marcar el requerimiento como "Aprobado" para permitir el commit. El agente debe sugerir el mensaje de commit.
+- **Interpretación**:
+  1. Implementar un test en la Integrity Suite que bloquee el commit si el último requerimiento no está en estado "Aprobado".
+  2. Actualizar `WORKFLOW.md` y `prompt.md` con esta nueva mecánica de seguridad.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/integrity-suite.test.ts` (estado: modificado)
+  - `.integrity-suite/docs/WORKFLOW.md` (estado: modificado)
+  - `.integrity-suite/docs/prompt.md` (estado: modificado)
+  - `.integrity-suite/docs/REQUIREMENTS.md` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 00:20 - ✅ Commit lockdown enforced and verified (version 1.3.0)
+
 ### Requerimiento 026
 
 - **Fecha**: 2026-03-05 00:05
@@ -76,6 +98,7 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
   - `tests/integrity-suite.test.ts` (estado: modificado)
 - **Tests**:
   - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
 - **Resultados de los tests**:
   - **Iteración 01**: 2026-03-05 00:10 - ✅ Language policies reinforced and tested (version 1.2.2)
 

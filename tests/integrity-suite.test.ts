@@ -150,6 +150,25 @@ describe('Integrity Suite', () => {
       expect(content).toContain('pnpm validate-project');
     });
 
+    it('should forbid commits if the latest requirement is not Approved', () => {
+      const reqPath = path.join(rootDir, '.integrity-suite', 'docs', 'REQUIREMENTS.md');
+      expect(fs.existsSync(reqPath), 'REQUIREMENTS.md is missing').toBe(true);
+      const content = fs.readFileSync(reqPath, 'utf8');
+
+      // Find the "## Historial de requerimientos" section to ignore templates
+      const historySection = content.split('## Historial de requerimientos')[1] || '';
+      const reqBlocks = historySection.split('### Requerimiento');
+
+      if (reqBlocks.length > 1) {
+        const latestReq = reqBlocks[1];
+        // Ensure it contains "- **Estado**: Aprobado"
+        expect(
+          latestReq,
+          'The latest requirement must be marked as Approved before committing.',
+        ).toContain('- **Estado**: Aprobado');
+      }
+    });
+
     it('should have a zero-tolerance validation script with security audit', () => {
       const script = pkg.scripts['validate-project'];
       expect(script).toContain('pnpm lint');

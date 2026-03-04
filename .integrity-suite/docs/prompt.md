@@ -15,8 +15,9 @@ Este proyecto utiliza una **Integrity Suite** estricta para garantizar los más 
 
 - **NO MODIFIQUES** ningún archivo dentro de `.integrity-suite/` EXCEPTO `.integrity-suite/docs/REQUIREMENTS.md`.
 - **NO MODIFIQUES** `tests/integrity-suite.test.ts`. Este archivo es el guardián de la integridad del proyecto.
-- **Pasa todos los tests**: Debes ejecutar `pnpm validate-project` (que incluye la Integrity Suite) antes de proponer cualquier commit.
-- **Documenta los requerimientos**: Eres responsable de mantener `.integrity-suite/docs/REQUIREMENTS.md` registrando cada requerimiento, su interpretación y los resultados de los tests.
+- **Pasa todos los tests**: Debes ejecutar `pnpm validate-project` (que incluye la Integrity Suite) antes de cada commit.
+- **Aprobación de commit**: Antes de cada commit, debes sugerir un mensaje de commit al usuario. El commit solo se permitirá si el usuario cambia el campo **Estado** a **Aprobado** en el historial de requerimientos.
+- **Documenta los requerimientos**: Eres responsable de mantener `.integrity-suite/docs/REQUIREMENTS.md` registrando cada requerimiento, su interpretación, los resultados de los tests y el campo **Estado: Pendiente**.
 - **Documenta los cambios**: Eres responsable de mantener `CHANGELOG.md`, siguiendo el formato establecido en el archivo.
 - **Idioma del agente**: Responde siempre en castellano.
 
