@@ -68,7 +68,6 @@ describe('Project Initial Setup', () => {
     expect(licenseContent).toContain('Marc Galindo');
     expect(licenseContent).toContain('marcundertest');
     expect(licenseContent).toContain('https://marcundertest.com');
-    // Simplified check for "non-commercial" and "attribution"
     expect(licenseContent.toLowerCase()).toContain('non-commercial');
     expect(licenseContent.toLowerCase()).toContain('attribution');
   });

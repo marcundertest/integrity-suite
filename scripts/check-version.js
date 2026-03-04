@@ -13,7 +13,6 @@ try {
     const oldPkg = JSON.parse(oldPkgContent);
     oldVersion = oldPkg.version;
   } catch (e) {
-    // If HEAD:package.json doesn't exist (initial commit), assume it's fine
     console.log('No previous version found in Git. Skipping version check.');
     process.exit(0);
   }

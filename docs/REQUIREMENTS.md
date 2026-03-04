@@ -62,6 +62,23 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 010
+
+- **Fecha**: 2026-03-04 21:35
+- **Requerimiento**: No emojis en comentarios, solo inglés, no comentarios didácticos/obvios, estrictamente necesarios. Testeable.
+- **Información adicional**: N/A
+- **Interpretación**: Establecer reglas de calidad para comentarios en el código: prohibir emojis, restringir el idioma al inglés y eliminar redundancias. Implementar un test automatizado que verifique estas condiciones en archivos de código (.ts, .js, .tsx, .jsx, .html, .css) detectando todos los estilos de comentarios (`//`, `/* */`, `<!-- -->`) e implementar la corrección en los archivos actuales.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/code-quality.test.ts` (estado: creado)
+  - `scripts/check-version.js` (estado: modificado)
+  - `.husky/pre-commit` (estado: modificado)
+- **Tests**:
+  - `tests/code-quality.test.ts` (estado: creado)
+  - `pnpm validate-project` (estado: ejecutado)
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-04 21:40 - ✅ Quality rules enforced (version 1.0.7)
+
 ### Requerimiento 009
 
 - **Fecha**: 2026-03-04 21:25
