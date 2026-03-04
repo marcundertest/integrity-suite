@@ -46,31 +46,3 @@ describe('Strict Commit Rules', () => {
     expect(fs.existsSync(scriptPath)).toBe(true);
   });
 });
-
-describe('License Verification', () => {
-  const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-
-  it('should have the correct project name and author details', () => {
-    const licensePath = path.join(rootDir, 'LICENSE');
-    const content = fs.readFileSync(licensePath, 'utf8');
-
-    expect(content).toContain('Project Template');
-    expect(content).toContain('project-template');
-    expect(content).toContain('Marc Galindo');
-    expect(content).toContain('https://marcundertest.com');
-    expect(content).toContain('marcundertest');
-  });
-
-  it('should include a link to the full license online', () => {
-    const licensePath = path.join(rootDir, 'LICENSE');
-    const content = fs.readFileSync(licensePath, 'utf8');
-    expect(content).toContain('https://creativecommons.org/licenses/by-nc/4.0/');
-  });
-
-  it('should specify non-commercial and attribution terms', () => {
-    const licensePath = path.join(rootDir, 'LICENSE');
-    const content = fs.readFileSync(licensePath, 'utf8');
-    expect(content.toLowerCase()).toContain('non-commercial');
-    expect(content.toLowerCase()).toContain('attribution');
-  });
-});

@@ -61,17 +61,6 @@ describe('Project Initial Setup', () => {
     expect(existsFile || existsPkg).toBe(true);
   });
 
-  it('should have a LICENSE file with the specified content', () => {
-    const licensePath = path.join(rootDir, 'LICENSE');
-    expect(fs.existsSync(licensePath)).toBe(true);
-    const licenseContent = fs.readFileSync(licensePath, 'utf8');
-    expect(licenseContent).toContain('Marc Galindo');
-    expect(licenseContent).toContain('marcundertest');
-    expect(licenseContent).toContain('https://marcundertest.com');
-    expect(licenseContent.toLowerCase()).toContain('non-commercial');
-    expect(licenseContent.toLowerCase()).toContain('attribution');
-  });
-
   it('should be a TypeScript project', () => {
     const tsconfigPath = path.join(rootDir, 'tsconfig.json');
     expect(fs.existsSync(tsconfigPath)).toBe(true);

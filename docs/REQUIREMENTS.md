@@ -62,6 +62,21 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 015
+
+- **Fecha**: 2026-03-04 22:28
+- **Requerimiento**: Remover los tests de LICENSE ya que el repositorio es una plantilla y el usuario final podría querer cambiarla.
+- **Información adicional**: N/A
+- **Interpretación**: Eliminar todas las pruebas automatizadas que verifican la existencia y contenido del archivo `LICENSE` en `tests/initial-setup.test.ts` y `tests/strict-commits.test.ts`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/initial-setup.test.ts` (estado: modificado)
+  - `tests/strict-commits.test.ts` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-04 22:30 - ✅ LICENSE tests removed (version 1.1.2)
+
 ### Requerimiento 014
 
 - **Fecha**: 2026-03-04 22:25
