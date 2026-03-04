@@ -12,7 +12,9 @@ describe('Integrity Suite', () => {
     entries.forEach((entry) => {
       const name = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        if (!['node_modules', '.git', 'dist', '.integrity-suite'].includes(entry.name)) {
+        if (
+          !['node_modules', '.git', 'dist', '.integrity-suite', 'coverage'].includes(entry.name)
+        ) {
           getFiles(name, allFiles);
         }
       } else {
@@ -341,6 +343,28 @@ describe('Integrity Suite', () => {
         expect(content, `Bypass directive in ${file}`).not.toContain('prettier-' + 'ignore');
         expect(content, `Bypass directive in ${file}`).not.toContain('markdownlint-' + 'disable');
       });
+    });
+  });
+
+  describe('Level 6: Testing & Coverage', () => {
+    it('should have @vitest/coverage-v8 installed', () => {
+      expect(pkg.devDependencies['@vitest/coverage-v8']).toBeDefined();
+    });
+
+    it('should configure 100% test coverage threshold in vitest.config.ts', () => {
+      const vitestConfigPath = path.join(rootDir, 'vitest.config.ts');
+      expect(fs.existsSync(vitestConfigPath), 'vitest.config.ts does not exist').toBe(true);
+
+      const content = fs.readFileSync(vitestConfigPath, 'utf8');
+      expect(content, 'vitest.config.ts missing coverage definition').toContain('coverage:');
+      expect(content).toMatch(/lines:\s*100/);
+      expect(content).toMatch(/functions:\s*100/);
+      expect(content).toMatch(/statements:\s*100/);
+      expect(content).toMatch(/branches:\s*100/);
+    });
+
+    it('should enforce test coverage flag in package.json scripts', () => {
+      expect(pkg.scripts['test:unit']).toContain('--coverage');
     });
   });
 });

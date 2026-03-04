@@ -63,6 +63,26 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 036
+
+- **Fecha**: 2026-03-05 00:45
+- **Requerimiento**: Imponer una barrera de 100% test coverage para todo nuevo código en el proyecto.
+- **Información adicional**: Se debe configurar vitest con `@vitest/coverage-v8` para obligar a que cualquier nueva función/fichero añadido al proyecto (sobre todo en `src/`) esté testeado. Si se añade código funcional pero sin testearlo, Vitest (y con él, validate-project) debe fallar, bloqueando el pre-commit.
+- **Interpretación**:
+  1. Instalar `@vitest/coverage-v8`.
+  2. Implementar `vitest.config.ts` con cobertura (lines, functions, branches, statements al 100%).
+  3. Modificar el `integrity-suite.test.ts` añadiendo un **Level 6: Testing & Coverage** que fuerce la existencia y configuración de este 100% de cobertura en vitest.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `package.json` (estado: modificado)
+  - `vitest.config.ts` (estado: creado)
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 00:50 - ✅ Coverage configuration installed and asserted (version 1.4.2)
+
 ### Requerimiento 035
 
 - **Fecha**: 2026-03-05 00:40

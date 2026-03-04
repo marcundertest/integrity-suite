@@ -1,12 +1,12 @@
 {
   "name": "project-template",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "type": "module",
   "description": "Strict project template for automated setup and code quality.",
   "main": "index.js",
   "scripts": {
     "test:meta": "vitest run tests/meta",
-    "test:unit": "vitest run tests/unit src --passWithNoTests",
+    "test:unit": "vitest run tests/unit src --passWithNoTests --coverage",
     "test:e2e": "vitest run tests/e2e --passWithNoTests",
     "test": "pnpm test:meta && pnpm test:unit && pnpm test:e2e",
     "build": "tsc",
@@ -29,6 +29,7 @@
     "@types/node": "^25.3.3",
     "@typescript-eslint/eslint-plugin": "^7.11.0",
     "@typescript-eslint/parser": "^7.11.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "@vitest/ui": "^4.0.18",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^10.1.8",

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2026-03-05
+
+### Added
+
+- Enforced a strict 100% test coverage threshold via `@vitest/coverage-v8` in `vitest.config.ts`.
+- Added a new `Level 6: Testing & Coverage` block to the `Integrity Suite` test, assuring the test pipeline blocks any new untested code. `test:unit` now runs with the `--coverage` flag activated.
+
 ## [1.4.1] - 2026-03-05
 
 ### Security
