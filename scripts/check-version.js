@@ -24,10 +24,23 @@ try {
     process.exit(1);
   }
 
-  // Basic semver check: current should be "greater" than old
-  // For simplicity, we just check if they are different or use a basic split
-  // but usually "different" is what users mean by "incremented" in a strict sense
-  // unless we want to be very precise with semver rules.
+  const parse = (v) => v.split('.').map(Number);
+  const [cMajor, cMinor, cPatch] = parse(currentVersion);
+  const [oMajor, oMinor, oPatch] = parse(oldVersion);
+
+  const isValidPatch = cMajor === oMajor && cMinor === oMinor && cPatch === oPatch + 1;
+  const isValidMinor = cMajor === oMajor && cMinor === oMinor + 1 && cPatch === 0;
+  const isValidMajor = cMajor === oMajor + 1 && cMinor === 0 && cPatch === 0;
+
+  if (!isValidPatch && !isValidMinor && !isValidMajor) {
+    console.error(`Error: Invalid version increment from ${oldVersion} to ${currentVersion}.`);
+    console.error('Version jumps are not allowed (e.g., 1.0.5 -> 1.0.14).');
+    console.error('Valid next versions are:');
+    console.error(`- Patch: ${oMajor}.${oMinor}.${oPatch + 1}`);
+    console.error(`- Minor: ${oMajor}.${oMinor + 1}.0`);
+    console.error(`- Major: ${oMajor + 1}.0.0`);
+    process.exit(1);
+  }
 
   console.log(`Version check passed: ${oldVersion} -> ${currentVersion}`);
 } catch (error) {

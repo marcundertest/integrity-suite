@@ -62,6 +62,20 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 009
+
+- **Fecha**: 2026-03-04 21:25
+- **Requerimiento**: que los incrementos de versión estén controlados sin saltos. Por ejemplo, que no pasemos de 1.2.0 a 1.4.0, o de 1.0.5 a 1.0.14, pero sí se pueda pasar de 1.0.1 a 1.1.0
+- **Información adicional**: N/A
+- **Interpretación**: Modificar `scripts/check-version.js` para validar que el incremento sea estrictamente el siguiente paso semántico (patch+1, minor+1 con patch=0, o major+1 con minor/patch=0).
+- **Testeable**: true
+- **Archivos afectados**:
+  - `scripts/check-version.js` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-04 21:30 - ✅ Strict increments validated (version 1.0.6)
+
 ### Requerimiento 008
 
 - **Fecha**: 2026-03-04 21:18
