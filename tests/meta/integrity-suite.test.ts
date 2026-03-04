@@ -145,10 +145,15 @@ describe('Integrity Suite', () => {
       expect(pkg.scripts['audit']).toBeDefined();
     });
 
-    it('should enforce validation in pre-commit hook', () => {
+    it('should enforce validation in pre-commit hook with no escapes', () => {
       const hookPath = path.join(rootDir, '.husky', 'pre-commit');
       const content = fs.readFileSync(hookPath, 'utf8');
-      expect(content).toContain('pnpm validate-project');
+      expect(content, 'Pre-commit hook is missing validation').toContain('pnpm validate-project');
+      expect(content, 'Pre-commit hook contains an early exit').not.toMatch(/exit\s+0/);
+      expect(content, 'Validation command is commented out or fake').not.toMatch(
+        /^[ \t]*#.*pnpm validate-project/m,
+      );
+      expect(content, 'Validation command is echoed').not.toMatch(/echo.*pnpm validate-project/m);
     });
 
     it('should forbid commits if the latest requirement is not Approved', () => {

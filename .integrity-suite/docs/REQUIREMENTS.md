@@ -63,6 +63,23 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 035
+
+- **Fecha**: 2026-03-05 00:40
+- **Requerimiento**: Bloquear posibles bypasses del hook `pre-commit`. Evaluando escapes ocultos en el código del script shell.
+- **Información adicional**: Un agente o desarrollador podría hacer un script que simplemente imprima (`echo pnpm validate-project`) o añadir un `exit 0` al archivo `.husky/pre-commit` para saltárselo pasando las comprobaciones de _string_.
+- **Interpretación**:
+  1. Expandir las aserciones del pre-commit.
+  2. Impedir que haya `exit 0`, un bypass condicional, echo o que esté comentado dentro del hook de husky.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 00:45 - ✅ Hook secured, version 1.4.1
+
 ### Requerimiento 034
 
 - **Fecha**: 2026-03-05 00:30
