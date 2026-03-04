@@ -62,6 +62,25 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 014
+
+- **Fecha**: 2026-03-04 22:25
+- **Requerimiento**: Garantizar que no haya ningún error ni advertencia de Markdownlint, ESLint o Prettier antes de commitear.
+- **Información adicional**: N/A
+- **Interpretación**:
+  1. Asegurar que `pnpm lint` mantenga `--max-warnings 0`.
+  2. Añadir un paso de verificación de Prettier (`prettier --check .`) al script `validate-project` para asegurar que el código está formateado.
+  3. Verificar que `markdownlint` no permita ninguna advertencia sin resolver.
+  4. Actualizar los tests para validar que estas comprobaciones estrictas existen en el flujo de validación.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `package.json` (estado: modificado)
+  - `tests/strict-commits.test.ts` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-04 22:30 - ✅ Strict linting and Prettier check enforced (version 1.1.1)
+
 ### Requerimiento 013
 
 - **Fecha**: 2026-03-04 22:20

@@ -17,9 +17,15 @@ describe('Strict Commit Rules', () => {
     const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
     expect(pkg.scripts['validate-project']).toContain('pnpm lint');
     expect(pkg.scripts['validate-project']).toContain('pnpm mdlint');
+    expect(pkg.scripts['validate-project']).toContain('pnpm format:check');
     expect(pkg.scripts['validate-project']).toContain('tsc --noEmit');
     expect(pkg.scripts['validate-project']).toContain('pnpm test');
     expect(pkg.scripts['validate-project']).toContain('pnpm check-version');
+  });
+
+  it('should have a format:check script in package.json', () => {
+    const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
+    expect(pkg.scripts['format:check']).toBe('prettier --check .');
   });
 
   it('should have ESLint configured to reject warnings and explicit any', () => {
