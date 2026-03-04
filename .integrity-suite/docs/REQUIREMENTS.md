@@ -63,6 +63,23 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 031
+
+- **Fecha**: 2026-03-05 01:00
+- **Requerimiento**: Modificar `getFiles` para que garantice el escaneo de configuraciones en la raíz del proyecto.
+- **Información adicional**: Archivos en la raíz como `.eslintrc.json`, `tsconfig.json` o un hipotético `config.ts` deben ser incluidos y analizados.
+- **Interpretación**:
+  1. Refactorizar `getFiles` usando `fs.readdirSync` con `withFileTypes` para una distinción precisa y robusta entre archivos y directorios.
+  2. Corregir el filtro de exclusión de la carpeta `tests/` para que no contamine con rutas absolutas, y asegurar que `codeFiles` identifique correctamente todo archivo validable en la raíz.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/integrity-suite.test.ts` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 01:05 - ✅ getFiles refactored and root configurations correctly evaluated (version 1.3.4)
+
 ### Requerimiento 030
 
 - **Fecha**: 2026-03-05 00:45

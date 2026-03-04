@@ -8,24 +8,18 @@ describe('Integrity Suite', () => {
 
   const getFiles = (dir: string, allFiles: string[] = []) => {
     if (!fs.existsSync(dir)) return allFiles;
-    const files = fs.readdirSync(dir);
-    files.forEach((file) => {
-      const name = path.join(dir, file);
-      if (fs.statSync(name).isDirectory()) {
-        if (
-          !name.includes('node_modules') &&
-          !name.includes('.git') &&
-          !name.includes('dist') &&
-          !name.includes('.integrity-suite')
-        ) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    entries.forEach((entry) => {
+      const name = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (!['node_modules', '.git', 'dist', '.integrity-suite'].includes(entry.name)) {
           getFiles(name, allFiles);
         }
       } else {
-        const ext = path.extname(name);
-        const base = path.basename(name);
+        const ext = path.extname(entry.name);
         if (
           ['.ts', '.js', '.tsx', '.jsx', '.html', '.css', '.json'].includes(ext) ||
-          base.startsWith('.env')
+          entry.name.startsWith('.env')
         ) {
           allFiles.push(name);
         }
@@ -35,9 +29,10 @@ describe('Integrity Suite', () => {
   };
 
   const allSourceFiles = getFiles(rootDir);
+  const testsDir = path.join(rootDir, 'tests') + path.sep;
   const codeFiles = allSourceFiles.filter((f) => {
     const ext = path.extname(f);
-    return ['.ts', '.js', '.tsx', '.jsx'].includes(ext) && !f.split(path.sep).includes('tests');
+    return ['.ts', '.js', '.tsx', '.jsx'].includes(ext) && !f.startsWith(testsDir);
   });
   const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
 
