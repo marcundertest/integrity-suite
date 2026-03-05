@@ -815,6 +815,19 @@ describe('Integrity Suite', () => {
         );
       });
     });
+
+    it('should not have form inputs without associated labels', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        // Input without id AND without aria-label AND without aria-labelledby
+        expect(content, `Input without label/aria-label in ${file}`).not.toMatch(
+          /<input(?![^>]*(?:aria-label|aria-labelledby|id\s*=))[^>]*>/i,
+        );
+      });
+    });
   });
 
   describe('Level 5: Architecture & Security', () => {

@@ -63,6 +63,23 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 064
+
+- **Fecha**: 2026-03-05 12:53
+- **Requerimiento**: Prohibir inputs de formulario sin label asociado.
+- **Información adicional**: Mejora la accesibilidad (a11y) asegurando que todos los inputs tengan una etiqueta descriptiva vinculada.
+- **Interpretación**:
+  1. Nuevo meta-test en el Nivel 4 que escanea archivos `.html`, `.jsx` o `.tsx` en busca de etiquetas `<input>` que carezcan de `id` (para vinculación con `<label>`), `aria-label` o `aria-labelledby`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `package.json` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 12:54 - ✅ Accessibility check for input labels enforced (83 tests)
+
 ### Requerimiento 063
 
 - **Fecha**: 2026-03-05 12:48
