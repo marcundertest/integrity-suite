@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.32] - 2026-03-05
+
+### Added
+
+- Meta-test to detect potential low-contrast color pairs (hardcoded gray values) in CSS, HTML, JSX, and TSX files.
+
 ## [1.4.31] - 2026-03-05
 
 ### Added

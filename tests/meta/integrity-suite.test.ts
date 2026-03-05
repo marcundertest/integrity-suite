@@ -836,6 +836,18 @@ describe('Integrity Suite', () => {
         expect(content, `Missing <main> landmark in ${file}`).toMatch(/<main[\s>]/i);
       });
     });
+
+    it('should not use known low-contrast color pairs in CSS/HTML', () => {
+      const styleFiles = allSourceFiles.filter((f) =>
+        ['.css', '.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      // Known problematic: light gray text (#ccc, #999, #aaa) - likely insufficient on white
+      const lowContrastPattern = /(color\s*:\s*#(?:ccc|999|aaa|bbb|ddd)|color\s*:\s*lightgr[ae]y)/i;
+      styleFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        expect(content, `Potential low-contrast color in ${file}`).not.toMatch(lowContrastPattern);
+      });
+    });
   });
 
   describe('Level 5: Architecture & Security', () => {

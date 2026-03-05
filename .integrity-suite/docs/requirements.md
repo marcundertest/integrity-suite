@@ -63,6 +63,23 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 066
+
+- **Fecha**: 2026-03-05 13:25
+- **Requerimiento**: Prohibir el uso de pares de colores de bajo contraste conocidos (hardcodeados) en CSS/HTML.
+- **Información adicional**: Mejora la accesibilidad (a11y) detectando grises claros que suelen ser ilegibles sobre fondo blanco.
+- **Interpretación**:
+  1. Nuevo meta-test en el Nivel 4 que escanea archivos `.css`, `.html`, `.jsx` o `.tsx` en busca de grises prohibidos (`#ccc`, `#aaa`, `#999`, etc.) en la propiedad `color`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `package.json` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 13:26 - ✅ Low-contrast color check enforced (85 tests)
+
 ### Requerimiento 065
 
 - **Fecha**: 2026-03-05 13:05
