@@ -594,6 +594,38 @@ describe('Integrity Suite', () => {
         });
       });
     });
+
+    it('should protect core kit files from unauthorized modification', async () => {
+      if (pkg.name === 'ai-developer-kit') return;
+
+      const { execSync } = await import('node:child_process');
+      let changedFiles = '';
+      try {
+        changedFiles = execSync('git status --porcelain', { encoding: 'utf8', stdio: 'pipe' });
+      } catch (e) {
+        return;
+      }
+
+      const paths = changedFiles
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => line.trim().slice(2).trim());
+
+      const protectedPaths = [
+        '.integrity-suite/docs/prompt.md',
+        '.integrity-suite/docs/workflow.md',
+        '.integrity-suite/scripts/',
+        'tests/meta/integrity-suite.test.ts',
+      ];
+
+      paths.forEach((p) => {
+        const isProtected = protectedPaths.some((prot) => p === prot || p.startsWith(prot));
+        expect(
+          isProtected,
+          `Kit protection: unauthorized modification attempt on protected core file: ${p}`,
+        ).toBe(false);
+      });
+    });
   });
 
   describe('Level 3: TypeScript Strictness & Config', () => {

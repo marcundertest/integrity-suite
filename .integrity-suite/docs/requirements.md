@@ -63,6 +63,20 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 073
+
+- **Fecha**: 2026-03-05 13:45
+- **Requerimiento**: Proteger los archivos core del kit cuando el nombre del proyecto no sea "ai-developer-kit".
+- **Información adicional**: Evita que los agentes modifiquen por error o intención las reglas fundamentales del kit (`prompt.md`, `workflow.md`, `scripts/`, `integrity-suite.test.ts`) una vez el kit se está usando en un proyecto real.
+- **Interpretación**:
+  1. Nuevo meta-test en el Nivel 2 que verifica si hay cambios staged/HEAD en los archivos protegidos si `package.json#name` != "ai-developer-kit".
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 13:46 - ✅ Kit core protection enforced (92 tests)
+
 ### Requerimiento 072
 
 - **Fecha**: 2026-03-05 13:40
