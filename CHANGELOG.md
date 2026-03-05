@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.6] - 2026-03-05
+
+### Changed
+
+- Enhanced ESM compatibility and cross-platform (macOS/Windows) node support. Scripts now utilize `node:` prefixes for core modules (`node:fs`, `node:child_process`, `node:url`, `node:path`).
+- Replaced the generic `ts-node` development dependency with `tsx` to natively and cleanly support running TypeScript directly in true ESM environments without requiring custom loaders or failing on unrecognized file extensions.
+
 ## [1.4.5] - 2026-03-05
 
 ### Changed

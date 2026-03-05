@@ -1,6 +1,6 @@
 {
   "name": "project-template",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "type": "module",
   "description": "Strict project template for automated setup and code quality.",
   "main": "index.js",
@@ -37,7 +37,7 @@
     "lint-staged": "^15.2.5",
     "markdownlint-cli": "^0.48.0",
     "prettier": "^3.2.5",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.4.5",
     "vite": "^7.3.1",
     "vitest": "^4.0.18"

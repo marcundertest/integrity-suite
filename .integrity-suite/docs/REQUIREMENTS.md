@@ -63,6 +63,27 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 040
+
+- **Fecha**: 2026-03-05 01:15
+- **Requerimiento**: Garantizar soporte multi-plataforma (macOS/Windows) y estándar puro ESM.
+- **Información adicional**: Con la configuración `"type": "module"` en `package.json` es recomendado por el estándar Node el uso de prefijos `node:` para paquetes nativos (`node:fs`, `node:path`). Además, el ejecutable genérico `ts-node` no funciona _out-of-the-box_ sin flags muy crudas frente a ESM en entornos modernos; fue sustituido estratégicamente por el instalador `tsx`. Finalmente se ha auditado la paridad de rutas (posix/windows) para confirmar que no causarán fricciones en ejecución.
+- **Interpretación**:
+  1. Actualizar los scripts en `.integrity-suite/scripts/` para utilizar prefijos importesm (`node:fs`, `node:child_process`).
+  2. Sustituir la dependencia _devDependencies_ nativa de `ts-node` por `tsx` para garantizar ejecución simple moderna de TypeScript puro ESM sin configuraciones cruzadas.
+  3. Comprobar robustez global de Windows frente a path y módulos ESM.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `package.json` (estado: modificado)
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `.integrity-suite/scripts/check-version.js` (estado: modificado)
+  - `.integrity-suite/scripts/check-changelog.js` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 01:20 - ✅ Cross-platform EMS setup guaranteed (version 1.4.6)
+
 ### Requerimiento 039
 
 - **Fecha**: 2026-03-05 01:10
