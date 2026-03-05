@@ -63,6 +63,26 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 044
+
+- **Fecha**: 2026-03-05 01:40
+- **Requerimiento**: Corrección de inconsistencias menores en ESLint y typo en test.
+- **Información adicional**: Identificados defectos menores en la última revisión:
+  1. El test de Level 4 contenía un typo en su nombre: "statments" en lugar de "statements".
+  2. La regla ESLint de override para relajar `no-console` apuntaba a `"scripts/**/*.js"`, directorio inexistente, en lugar del correcto `".integrity-suite/scripts/**/*.js"`.
+- **Interpretación**:
+  1. Corregir typo en el descriptor `it('should forbid print statements in source'...` en `integrity-suite.test.ts`.
+  2. Sustituir `"scripts/**/*.js"` por `".integrity-suite/scripts/**/*.js"` en el array de `overrides` dentro de `.eslintrc.json`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `.eslintrc.json` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 01:40 - ✅ Minor bugs fixed and pipeline green (version 1.4.10)
+
 ### Requerimiento 043
 
 - **Fecha**: 2026-03-05 01:35

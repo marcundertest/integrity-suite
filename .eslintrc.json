@@ -17,7 +17,7 @@
   },
   "overrides": [
     {
-      "files": ["scripts/**/*.js"],
+      "files": [".integrity-suite/scripts/**/*.js"],
       "rules": {
         "no-console": "off"
       }

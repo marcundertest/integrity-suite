@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.10] - 2026-03-05
+
+### Fixed
+
+- Fixed a typo inside the Level 4 Integrity Suite test name description ensuring grammatical correctness.
+- Remedied a dysfunctional `.eslintrc.json` rule which failed to suppress warnings on `no-console` because its file matcher mistakenly targeted `"scripts/**/*.js"` rather than the existing `".integrity-suite/scripts/**/*.js"`.
+
 ## [1.4.9] - 2026-03-05
 
 ### Fixed

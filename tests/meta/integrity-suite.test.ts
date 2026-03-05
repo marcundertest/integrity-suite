@@ -302,7 +302,7 @@ describe('Integrity Suite', () => {
       });
     });
 
-    it('should forbid print statments in source', () => {
+    it('should forbid print statements in source', () => {
       codeFiles.forEach((file) => {
         const parts = file.split(path.sep);
         if (parts.includes('.integrity-suite')) return;
