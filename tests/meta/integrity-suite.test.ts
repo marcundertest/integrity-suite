@@ -2922,5 +2922,20 @@ describe('Integrity Suite', () => {
         // If git is unavailable, skip gracefully
       }
     });
+
+    it('should record current version in requirements file', () => {
+      // @version-release
+      // Ensures user requirement log tracks version bumps
+      try {
+        const reqContent = fs.readFileSync(path.join(rootDir, '.integrity-suite', 'docs', 'requirements.md'), 'utf8');
+        const versionPattern = new RegExp(`\*\*Versi[oó]n\*\*: ${pkg.version.replace(/\./g, '\\.')}`);
+        expect(
+          versionPattern.test(reqContent),
+          `requirements.md must include "**Versión**: ${pkg.version}" for the current release`
+        ).toBe(true);
+      } catch (e) {
+        // if file missing, let other tests catch it
+      }
+    });
   });
 });

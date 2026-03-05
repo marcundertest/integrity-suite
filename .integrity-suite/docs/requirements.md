@@ -4,6 +4,8 @@ Este archivo contiene el historial de requerimientos del usuario, incluyendo su 
 
 ## Plantillas
 
+Cada registro de requerimiento ahora incluye un campo **Versión** que indica la versión del proyecto en la que se implementó el cambio. Esto permite que un test automático valide que cada bump de versión tenga su contraparte en el historial de requerimientos.
+
 Utilizar la siguiente plantilla para cada requerimiento que sea testeable:
 
 ```markdown
@@ -66,6 +68,7 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 ### Requerimiento 140
 
 - **Fecha**: 2026-03-05 20:45
+- **Versión**: 1.4.56
 - **Requerimiento**: Definir una política explícita de versionado y tests. En commit: versión DEBE incrementar, CHANGELOG/requirements DEBEN actualizarse, TODOS los tests (incluyendo version check estricto) DEBEN pasar. En push: versión >= remoto (puede ser igual), TODOS los tests pasan excepto el de version (relajado).
 - **Información adicional**: Dos modos de operación: pre-commit estricto, pre-push relajado. Métrica: commits fallan si hay problemas; patchs desde commits anteriores pueden pushearse sin bump adicional.
 - **Interpretación**: (1) check-version.js: agregar `--relaxed` que permita version==HEAD. (2) package.json: dos scripts `validate-project` (strict, para pre-commit) y `validate-project:push` (con `check-version:relaxed`, para pre-push). (3) .husky/pre-commit: ejecute TODOS los tests incluyendo full validate (version bump OBLIGATORIO). (4) .husky/pre-push: ejecute validate-project:push (version puede ser igual a remoto). (5) Meta-tests: actualizar aserciones en pre-commit y pre-push.
@@ -85,6 +88,7 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 ### Requerimiento 139
 
 - **Fecha**: 2026-03-05 19:50
+- **Versión**: 1.4.56
 - **Requerimiento**: Push bloqueado por check-version que obliga a subir version en cada push. Pre-commit ejecutaba validate-project completo en cada commit, autosaboteando el desarrollo del propio kit.
 - **Información adicional**: El pre-commit hook ya no tenia validate-project (se habia eliminado en sesion anterior), pero los scripts check-version y check-changelog seguian impidiendo el push al comparar version actual con HEAD (siempre identica tras un commit). El meta-test de pre-commit exigia validate-project en el hook, lo que reforzaba el problema.
 - **Interpretación**: (1) check-version.js: version igual a HEAD es valida; solo falla si va hacia atras o salta mas de un incremento. (2) check-changelog.js: omite la verificacion si la version no cambio respecto a HEAD. (3) Meta-test pre-commit: cambia de exigir validate-project a prohibirlo (la validacion completa pertenece al pre-push). (4) Bump version 1.4.55 -> 1.4.56.
@@ -105,6 +109,7 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 ### Requerimiento 138
 
 - **Fecha**: 2026-03-05 19:00
+- **Versión**: 1.4.55
 - **Requerimiento**: Corrige los 6 fallos identificados en el analisis (===, any, skip/only no cubiertos, eval no prohibido, engines.node, core-protection eludible) e implementa 20 nuevos meta-tests: A (.skip/.only), B (min assertions), C (passWithNoTests), D (eval/new Function), E (dangerouslySetInnerHTML), F (string throws), G (noFallthroughCasesInSwitch), H (exactOptionalPropertyTypes), I (noPropertyAccessFromIndexSignature), J (no var), K (no default exports), L (no nested ternary), M (switch default), N (no || true en validate-project), O (pre-push hook), P (engines.node), Q (.nvmrc), R (no commented-out code), S (import order), T (no git/file deps), Level 11 @documentation (JSDoc exports, @param, descripcion package, no placeholder).
 - **Información adicional**: N/A
 - **Interpretación**: Correcciones de tests existentes: fix regex === (falso positivo con !==), eliminar deteccion de any redundante con ESLint, proteger core-protection contra INTEGRITY_SKIP_PROTECTION en scripts/hooks. Nuevos tests en niveles 0-10 y nuevo Level 11 @documentation. Cambios de infraestructura: agregar opciones estrictas a tsconfig.json, engines.node a package.json, crear .nvmrc y .husky/pre-push, JSDoc en src/index.ts.
