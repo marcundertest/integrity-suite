@@ -63,6 +63,132 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 119
+
+- **Fecha**: 2026-03-05 15:08
+- **Requerimiento**: Prohibir la encapsulación de variables de interacción anidando controles visuales dentro de etiquetas de `label`.
+- **Información adicional**: Validar que componentes directos (`<button>`, `<a>`, `<input>`) no estén erróneamente arropados como un texto explicativo pervirtiendo su capacidad interactiva.
+- **Interpretación**:
+  1. Detectar `<label>` y fallar en caso de localizar etiquetas funcionales internamente.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 15:09 - ✅ Testing verified successfully.
+
+### Requerimiento 118
+
+- **Fecha**: 2026-03-05 15:08
+- **Requerimiento**: Proscribir el uso natural de `tabIndex` mayor a 0 explícito en el DOM.
+- **Información adicional**: Este control manual desvirtúa las lógicas adaptativas del motor y los atajos del explorador empobreciendo la navegación guiada.
+- **Interpretación**:
+  1. Auditar regex del atributo `tabIndex` excluyendo que valores positivos `1,2...` se declaren explícitamente.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 15:09 - ✅ Testing verified successfully.
+
+### Requerimiento 117
+
+- **Fecha**: 2026-03-05 15:08
+- **Requerimiento**: Prohibición de redundancia literal en los textos descriptivos: El `alt` del componente img no debe mimetizar textos contextuales expuestos adjacentemente.
+- **Información adicional**: Limpiar redundancias verbales que entorpecen los locutores automáticos repitiendo el mismo concepto.
+- **Interpretación**:
+  1. Parsear el `alt="..."` text de las `<img>` y confirmar de modo cercano que dicho literal puro no se encuentre duplicado adyacente en el scope visual como etiqueta en línea.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 15:09 - ✅ Testing verified successfully.
+
+### Requerimiento 116
+
+- **Fecha**: 2026-03-05 15:08
+- **Requerimiento**: Enlace nativo `<a>` se asocia funcionalmente con atributo `href`.
+- **Información adicional**: Todo link no semántico que omita ruta, debería por convención estructurarse mediante tag button, proscribiendo su uso como enlace ciego.
+- **Interpretación**:
+  1. Rastrear componente `a` para forzar su ligadura con target `href`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 15:09 - ✅ Testing verified successfully.
+
+### Requerimiento 115
+
+- **Fecha**: 2026-03-05 15:08
+- **Requerimiento**: Todo `<button>` visual debe contener texto accesible implícito o declaración `aria-label`.
+- **Información adicional**: Evitar de forma tajante botones silenciosos para las API y motores de accesibilidad.
+- **Interpretación**:
+  1. Detectar tags button estancados interiormente vacíos, e invalidar de carecer declaración aria suplementaria.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 15:09 - ✅ Testing verified successfully.
+
+### Requerimiento 114
+
+- **Fecha**: 2026-03-05 15:08
+- **Requerimiento**: Figuras HTML (`<figure>`) visuales necesitan explicitar título vinculante mediante `<figcaption>`.
+- **Información adicional**: Exigir coherencia sintáctica para no mermar indexación SEO de las representaciones fotográficas.
+- **Interpretación**:
+  1. Encontrar encapsulamientos iterados `<figure>` que integren inner child `<img>` y cerciorar la existencia literal del capto-label `<figcaption>`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 15:09 - ✅ Testing verified successfully.
+
+### Requerimiento 113
+
+- **Fecha**: 2026-03-05 15:08
+- **Requerimiento**: Imponer atributo funcional `controls` a nivel tag `<audio>`.
+- **Información adicional**: Carencia de controls oculta elementos multimedias para ciegos o usuarios con navegación exclusiva de tab.
+- **Interpretación**:
+  1. Identificar tag container audio y exigir atributo visual habilitante explícito.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 15:09 - ✅ Testing verified successfully.
+
+### Requerimiento 112
+
+- **Fecha**: 2026-03-05 15:08
+- **Requerimiento**: Imponer atributo funcional `controls` a nivel tag `<video>`.
+- **Información adicional**: Prevendrá en UI los auto-play hostiles y bloquear la interactividad multimedia si carece de focus state visual accesible.
+- **Interpretación**:
+  1. Identificar container tag video y verificar match contra tag attribute.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 15:09 - ✅ Testing verified successfully.
+
+### Requerimiento 111
+
+- **Fecha**: 2026-03-05 15:08
+- **Requerimiento**: Elemento nativo HTML `<meter>` requiere declarar límites operacionales funcionales (`min` & `max`).
+- **Información adicional**: Las unidades de medida del componente necesitan acotar su capacidad de interpretación porcentual dictada de forma semántica.
+- **Interpretación**:
+  1. Escaneo indexado regular matcheando el componente de bloque meter confirmando coexistencia de metadatos límite `min` y superior `max`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 15:09 - ✅ Testing verified successfully.
+
 ### Requerimiento 110
 
 - **Fecha**: 2026-03-05 14:55

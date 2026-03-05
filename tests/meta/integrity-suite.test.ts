@@ -1548,6 +1548,134 @@ describe('Integrity Suite', () => {
         });
       });
     });
+
+    it('meter elements should define min and max attributes', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        const meters = content.match(/<meter[^>]*>/gi) ?? [];
+        meters.forEach((meter) => {
+          expect(meter, `Meter missing min attribute in ${file}`).toMatch(
+            /\bmin\s*=\s*["'][^"']+["']/i,
+          );
+          expect(meter, `Meter missing max attribute in ${file}`).toMatch(
+            /\bmax\s*=\s*["'][^"']+["']/i,
+          );
+        });
+      });
+    });
+
+    it('video elements should include controls attribute', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        expect(content, `Video element without controls in ${file}`).not.toMatch(
+          /<video(?![^>]*\bcontrols\b)[^>]*>/i,
+        );
+      });
+    });
+
+    it('audio elements should include controls attribute', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        expect(content, `Audio element without controls in ${file}`).not.toMatch(
+          /<audio(?![^>]*\bcontrols\b)[^>]*>/i,
+        );
+      });
+    });
+
+    it('figures containing images should include figcaption', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        const figures = content.match(/<figure[^>]*>[\s\S]*?<\/figure>/gi) ?? [];
+        figures.forEach((figure) => {
+          if (/<img[^>]*>/i.test(figure)) {
+            expect(figure, `Figure with image missing figcaption in ${file}`).toMatch(
+              /<figcaption[^>]*>/i,
+            );
+          }
+        });
+      });
+    });
+
+    it('buttons should have visible text or aria-label', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        const emptyButtons = content.match(/<button(?![^>]*aria-label)[^>]*>\s*<\/button>/gi) ?? [];
+        expect(emptyButtons.length, `Button without text or aria-label in ${file}`).toBe(0);
+      });
+    });
+
+    it('anchor elements should include href attribute', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        expect(content, `Anchor without href found in ${file}`).not.toMatch(
+          /<a(?![^>]*href\s*=)[^>]*>/i,
+        );
+      });
+    });
+
+    it('image alt text should not duplicate adjacent visible text', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        const images = content.match(/<img[^>]*alt\s*=\s*["'][^"']+["'][^>]*>/gi) ?? [];
+        images.forEach((img) => {
+          const altMatch = img.match(/alt\s*=\s*["']([^"']+)["']/i);
+          if (!altMatch) return;
+          const altText = altMatch[1];
+          const nearbyText = new RegExp(`>${altText}<`, 'i');
+          expect(content, `Image alt duplicates visible text "${altText}" in ${file}`).not.toMatch(
+            nearbyText,
+          );
+        });
+      });
+    });
+
+    it('tabIndex should not be greater than 0', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        expect(content, `tabIndex greater than 0 found in ${file}`).not.toMatch(
+          /tabIndex\s*=\s*["']?[1-9]\d*["']?/i,
+        );
+      });
+    });
+
+    it('labels should not contain interactive elements', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        const labels = content.match(/<label[^>]*>[\s\S]*?<\/label>/gi) ?? [];
+        labels.forEach((label) => {
+          expect(label, `Interactive element inside label in ${file}`).not.toMatch(
+            /<(button|a|input|select|textarea)[^>]*>/i,
+          );
+        });
+      });
+    });
   });
 
   describe('Level 5: Architecture & Security', () => {

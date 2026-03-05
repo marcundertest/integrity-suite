@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.45] - 2026-03-05
+
+### Added
+
+- 9 additional HTML structure and semantics meta tests:
+  - Validates `<meter>` to require explicit `min` and `max` attributes for correct screen reader boundary deduction.
+  - Require `<video>` and `<audio>` tags to declare the `controls` property for accessibility playback.
+  - Forbids placing interactive components (e.g. `<button>`, `<a>`) directly inside standard `<label>` tags.
+  - Forbids `tabIndex` attributes set greater than `0` to prevent forcing unpredictable keyboard workflows.
+  - Fails implementations where an image's `alt` text matches nearby or adjacent literal HTML textual content.
+  - Requires `<figure>` contexts containing images to use a valid `<figcaption>`.
+  - Audits `<button>` to ensure it is rarely 'mute', validating the existence of direct inner text or `aria-label`.
+  - Disallows standard `<a>` nodes from existing without an associative `href` attribute.
+
 ## [1.4.44] - 2026-03-05
 
 ### Added
