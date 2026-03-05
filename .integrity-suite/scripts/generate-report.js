@@ -142,10 +142,50 @@ const htmlContent = `
             border: 1px solid hsl(var(--border));
             border-radius: var(--radius);
             background: hsl(var(--card));
+            transition: all 0.2s ease;
+            text-align: left;
+            width: 100%;
+            display: block;
+            appearance: none;
+            -webkit-appearance: none;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            color: inherit;
         }
 
-        .summary-label { font-size: 0.75rem; font-weight: 500; color: hsl(var(--muted-foreground)); text-transform: uppercase; }
-        .summary-value { font-size: 1.5rem; font-weight: 600; margin-top: 0.25rem; }
+        .summary-item.clickable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .summary-item.clickable:hover {
+            border-color: hsl(var(--primary) / 0.5);
+            background: hsl(var(--muted) / 0.3);
+            transform: translateY(-2px);
+        }
+
+        .summary-item.active {
+            border-color: hsl(var(--primary));
+            background: hsl(var(--muted) / 0.5);
+            box-shadow: 0 4px 12px -4px hsl(var(--primary) / 0.2);
+        }
+
+        .summary-label { 
+            font-size: 0.75rem; 
+            font-weight: 500; 
+            color: hsl(var(--muted-foreground)); 
+            text-transform: uppercase; 
+            display: block;
+            margin-bottom: 0.25rem;
+            pointer-events: none;
+        }
+        .summary-value { 
+            font-size: 1.5rem; 
+            font-weight: 600; 
+            display: block; 
+            pointer-events: none;
+        }
 
         .value-success { color: hsl(var(--success)); }
         .value-destructive { color: hsl(var(--destructive)); }
@@ -223,6 +263,11 @@ const htmlContent = `
             color: hsl(var(--muted-foreground));
         }
 
+        footer a {
+            color: inherit;
+            text-decoration: underline;
+        }
+
         @media (max-width: 640px) {
             .summary-grid { grid-template-columns: repeat(2, 1fr); }
             body { padding: 1.5rem 1rem; }
@@ -241,24 +286,27 @@ const htmlContent = `
 
         <div class="summary-grid">
             <div class="summary-item">
-                <p class="summary-label">Score</p>
-                <p class="summary-value ${successRate >= 90 ? 'value-success' : 'value-destructive'}">${successRate}%</p>
+                <span class="summary-label">Score</span>
+                <span class="summary-value ${successRate >= 90 ? 'value-success' : 'value-destructive'}">${successRate}%</span>
             </div>
             <div class="summary-item">
-                <p class="summary-label">Tests</p>
-                <p class="summary-value">${totalTests}</p>
+                <span class="summary-label">Tests</span>
+                <span class="summary-value">${totalTests}</span>
             </div>
-            <div class="summary-item">
-                <p class="summary-label">Passed</p>
-                <p class="summary-value value-success">${passedTests}</p>
-            </div>
-            <div class="summary-item">
-                <p class="summary-label">Failed</p>
-                <p class="summary-value ${failedTests > 0 ? 'value-destructive' : ''}">${failedTests}</p>
-            </div>
+            <button class="summary-item clickable filter-trigger" data-filter="passed" type="button" style="cursor:pointer; user-select:none; background-color:hsl(var(--card))">
+                <span class="summary-label">Passed</span>
+                <span class="summary-value value-success">${passedTests}</span>
+            </button>
+            <button class="summary-item clickable filter-trigger" data-filter="failed" type="button" style="cursor:pointer; user-select:none; background-color:hsl(var(--card))">
+                <span class="summary-label">Failed</span>
+                <span class="summary-value value-destructive">${failedTests}</span>
+            </button>
         </div>
 
-        <h2 class="section-title">Analysis Findings</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 class="section-title" style="margin-bottom: 0;">Analysis Findings</h2>
+            <button id="clear-filters" class="filter-trigger" data-filter="all" type="button" style="cursor:pointer; user-select:none; display:none; background:none; border:none; color:hsl(var(--primary)); text-decoration:underline; font-size:0.875rem; padding:0; font-family:inherit;">Clear filters</button>
+        </div>
         <main>
             ${Object.entries(categories)
               .sort()
@@ -273,7 +321,7 @@ const htmlContent = `
                         ${data.tests
                           .map(
                             (test) => `
-                            <li class="test-item">
+                            <li class="test-item" data-status="${test.status}">
                                 <div class="test-row">
                                     <div class="status-indicator status-${test.status}"></div>
                                     <span class="test-title">${test.title}</span>
@@ -297,9 +345,52 @@ const htmlContent = `
         </main>
 
         <footer>
-            Audited on ${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')} ${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}:${String(new Date().getSeconds()).padStart(2, '0')} | Made with <a href="https://vitest.dev/" target="_blank" rel="noopener noreferrer" style="cursor:pointer">Vitest</a> and <a href="https://github.com/marcundertest/integrity-suite" target="_blank" rel="noopener noreferrer" style="cursor:pointer">Integrity Suite v${pkg.version}</a> by <a href="https://github.com/marcundertest" target="_blank" rel="noopener noreferrer" style="cursor:pointer">Marc Galindo</a>.
+            Audited on ${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')} ${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}:${String(new Date().getSeconds()).padStart(2, '0')} | Made with <a href="https://vitest.dev/" target="_blank" rel="noopener noreferrer" style="cursor:pointer">Vitest</a> and <a href="https://github.com/marcundertest/integrity-suite" target="_blank" rel="noopener noreferrer" style="cursor:pointer">Integrity Suite v${pkg.version}</a> by <a href="https://github.com/marcundertest" target="_blank" rel="noopener noreferrer" style="cursor:pointer">marcundertest</a>.
         </footer>
     </div>
+
+    <script>
+        (function() {
+            const triggers = document.querySelectorAll('.filter-trigger');
+            const items = document.querySelectorAll('.test-item');
+            const cards = document.querySelectorAll('.category-card');
+            const clearBtn = document.getElementById('clear-filters');
+
+            function filter(status, activeEl) {
+                const isToggleOff = activeEl && activeEl.classList.contains('active');
+                const finalStatus = isToggleOff ? 'all' : status;
+
+                // Reset summary active states
+                triggers.forEach(t => {
+                    if (t.classList.contains('summary-item')) {
+                        t.classList.remove('active');
+                    }
+                });
+
+                // Apply active state if not toggling off
+                if (!isToggleOff && activeEl && activeEl.classList.contains('summary-item')) {
+                    activeEl.classList.add('active');
+                }
+
+                // UI Management
+                clearBtn.style.display = finalStatus === 'all' ? 'none' : 'inline-block';
+
+                items.forEach(item => {
+                    const matches = finalStatus === 'all' || item.getAttribute('data-status') === finalStatus;
+                    item.style.display = matches ? 'flex' : 'none';
+                });
+
+                cards.forEach(card => {
+                    const hasVisibleItems = Array.from(card.querySelectorAll('.test-item')).some(i => i.style.display !== 'none');
+                    card.style.display = hasVisibleItems ? 'block' : 'none';
+                });
+            }
+
+            triggers.forEach(t => {
+                t.addEventListener('click', function() { filter(t.getAttribute('data-filter'), t); });
+            });
+        })();
+    </script>
 </body>
 </html>
 `;

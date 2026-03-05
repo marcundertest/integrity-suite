@@ -63,6 +63,23 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 136
+
+- **Fecha**: 2026-03-05 17:35
+- **Requerimiento**: Añadir filtrado interactivo al reporte de auditoría y unificar su estética.
+- **Información adicional**: Se busca que al pulsar en "Passed" o "Failed" el listado se filtre automáticamente, y que la estética de todas las tarjetas de resumen sea idéntica.
+- **Interpretación**:
+  1. Convertir tarjetas de resumen en disparadores de filtro (botones).
+  2. Implementar lógica de filtrado toggle-able (activar/desactivar al clicar).
+  3. Añadir enlace "Clear filters" dinámico.
+  4. Homogeneizar CSS de todas las tarjetas de resumen.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `.integrity-suite/scripts/generate-report.js` (estado: modificado)
+- **Estado**: Completado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 17:37 - ✅ Filtrado interactivo y estética unificada implementados correctamente.
+
 ### Requerimiento 135
 
 - **Fecha**: 2026-03-05 16:40
