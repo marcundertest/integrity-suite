@@ -63,6 +63,20 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 082
+
+- **Fecha**: 2026-03-05 14:04
+- **Requerimiento**: Imponer `tabIndex` explícito en `<img>` o `<button>` con atributos `onClick`.
+- **Información adicional**: Garantiza la semántica y accesibilidad al asegurar que cualquier elemento base que se configure como interactivo vía código JS/TS sea activamente indexable por teclado.
+- **Interpretación**:
+  1. Meta-test que escanea archivos en busca de `<img>` o `<button>` con un atributo `onClick` y valida la presencia de `tabIndex`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 14:06 - ✅ Clickable tabIndex validation enforced (101 tests)
+
 ### Requerimiento 081
 
 - **Fecha**: 2026-03-05 13:58

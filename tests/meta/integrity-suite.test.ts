@@ -1077,6 +1077,21 @@ describe('Integrity Suite', () => {
         );
       });
     });
+
+    it('should not have img or button with onClick without tabIndex (keyboard accessibility)', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        const clickableElements = content.match(/<(img|button)[^>]*onClick\s*=\s*[^>]+>/gi) ?? [];
+        clickableElements.forEach((el) => {
+          expect(el, `Clickable element not keyboard-focusable in ${file}: ${el}`).toMatch(
+            /\btabIndex\s*=/i,
+          );
+        });
+      });
+    });
   });
 
   describe('Level 5: Architecture & Security', () => {
