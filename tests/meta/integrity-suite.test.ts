@@ -39,7 +39,7 @@ describe('Integrity Suite', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
   const hasTailwind = pkg.dependencies?.tailwindcss || pkg.devDependencies?.tailwindcss;
 
-  describe('Level 0: Base Environment & Cleanup', () => {
+  describe('Level 0: Base Environment & Cleanup @base', () => {
     it('should be a git repository', () => {
       expect(fs.existsSync(path.join(rootDir, '.git'))).toBe(true);
     });
@@ -143,7 +143,7 @@ describe('Integrity Suite', () => {
     });
   });
 
-  describe('Level 1: Project Metadata & README', () => {
+  describe('Level 1: Project Metadata & README @metadata', () => {
     it('should forbid em dash in Markdown documentation files', () => {
       const mdFiles = allSourceFiles.filter((f) => f.endsWith('.md'));
       mdFiles.forEach((file) => {
@@ -197,7 +197,7 @@ describe('Integrity Suite', () => {
     });
   });
 
-  describe('Level 2: Strict Workflow (Pipeline)', () => {
+  describe('Level 2: Strict Workflow (Pipeline) @workflow', () => {
     it('should have essential scripts in package.json', () => {
       expect(pkg.scripts['build']).toBeDefined();
       expect(pkg.scripts['test']).toBeDefined();
@@ -635,7 +635,7 @@ describe('Integrity Suite', () => {
     });
   });
 
-  it('should protect core kit files from unauthorized modification', async () => {
+  it('should protect core kit files from unauthorized modification @core-protection', async () => {
     // Note: To allow modification of core kit files during template development,
     // you can temporarily disable this test or set an environment variable.
     if (process.env.INTEGRITY_SKIP_PROTECTION === 'true') return;
@@ -669,7 +669,7 @@ describe('Integrity Suite', () => {
     });
   });
 
-  describe('Level 3: TypeScript Strictness & Config', () => {
+  describe('Level 3: TypeScript Strictness & Config @typescript', () => {
     const tsconfig = JSON.parse(fs.readFileSync(path.join(rootDir, 'tsconfig.json'), 'utf8'));
 
     it('should have strict mode and implicitAny disabled in tsconfig.json', () => {
@@ -744,7 +744,7 @@ describe('Integrity Suite', () => {
     });
   });
 
-  describe('Level 4: Hygiene & Global Standards', () => {
+  describe('Level 4: Hygiene & Global Standards @hygiene', () => {
     it('should forbid em dash in Spanish source code comments', () => {
       allSourceFiles.forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
@@ -1681,7 +1681,7 @@ describe('Integrity Suite', () => {
     });
   });
 
-  describe('Level 5: Architecture & Security', () => {
+  describe('Level 5: Architecture & Security @security', () => {
     it('should have a .env.example documenting required variables', () => {
       if (fs.existsSync(path.join(rootDir, '.env'))) {
         expect(
@@ -1892,7 +1892,7 @@ describe('Integrity Suite', () => {
     });
   });
 
-  describe('Level 6: Testing & Coverage', () => {
+  describe('Level 6: Testing & Coverage @testing', () => {
     it('should have @vitest/coverage-v8 installed', () => {
       expect(pkg.devDependencies['@vitest/coverage-v8']).toBeDefined();
     });
@@ -2004,7 +2004,7 @@ describe('Integrity Suite', () => {
     });
   });
 
-  describe('Level 7: Dependency Hygiene', () => {
+  describe('Level 7: Dependency Hygiene @dependencies', () => {
     it('should not have dependencies that belong in devDependencies', () => {
       const devOnlyPackages = ['vitest', 'eslint', 'prettier', 'typescript', 'husky'];
       const prodDeps = Object.keys(pkg.dependencies || {});
@@ -2041,7 +2041,7 @@ describe('Integrity Suite', () => {
     });
   });
 
-  describe('Level 8: Dependency Security', () => {
+  describe('Level 8: Dependency Security @security-audit', () => {
     it('should have audit script with no severity bypass flags', () => {
       const auditScript = pkg.scripts['audit'];
       expect(auditScript, 'audit script is missing').toBeDefined();
@@ -2112,7 +2112,7 @@ describe('Integrity Suite', () => {
     });
   });
 
-  describe('Level 9: Advanced Code Safety & Consistency', () => {
+  describe('Level 9: Advanced Code Safety & Consistency @consistency', () => {
     it('should not mix async/await with .then()/.catch() in the same file', () => {
       codeFiles.forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');

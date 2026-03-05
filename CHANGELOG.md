@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.51] - 2026-03-05
+
+### Changed
+
+- Added categorized meta-test execution via new scripts: `test:meta:base`, `test:meta:workflow`, `test:meta:hygiene`, etc.
+- Fixed Husky deprecation warnings in `.husky/pre-commit`.
+
 ## [1.4.50] - 2026-03-05
 
 ### Changed

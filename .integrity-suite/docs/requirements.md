@@ -63,6 +63,22 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 134
+
+- **Fecha**: 2026-03-05 16:35
+- **Requerimiento**: Categorizar los meta-tests y crear scripts de ejecución granular.
+- **Información adicional**: Se desea poder ejecutar subconjuntos de la Integrity Suite (estilo Playwright tags) para mayor agilidad.
+- **Interpretación**:
+  1. Añadir etiquetas `@tag` en los `describe` de `integrity-suite.test.ts`.
+  2. Implementar scripts `test:meta:*` en `package.json` usando el flag `-t` de Vitest.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `package.json` (estado: modificado)
+- **Estado**: Completado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 16:36 - ✅ Scripts granulares funcionando (ej: `@hygiene`, `@core-protection`).
+
 ### Requerimiento 133
 
 - **Fecha**: 2026-03-05 16:25
