@@ -63,6 +63,48 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 072
+
+- **Fecha**: 2026-03-05 13:40
+- **Requerimiento**: Enlaces externos con `target="_blank"` y `rel="noopener noreferrer"`.
+- **Información adicional**: Previene ataques de _reverse tabnabbing_ y mejora la seguridad al abrir enlaces externos.
+- **Interpretación**:
+  1. Meta-test que identifica enlaces `<a>` con `href` externos (`http` o `https`) y verifica la presencia de los atributos de seguridad.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 13:42 - ✅ External links security enforced (91 tests)
+
+### Requerimiento 071
+
+- **Fecha**: 2026-03-05 13:40
+- **Requerimiento**: Contenido de botones no seleccionable (`user-select: none`).
+- **Información adicional**: Mejora la UX evitando glitches visuales donde el texto del botón se selecciona al hacer click rápidamente.
+- **Interpretación**:
+  1. Meta-test que verifica la presencia de `user-select: none` o `select-none` (Tailwind) en etiquetas `<button>`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Pendiente
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 13:42 - ✅ Button selection disabled (91 tests)
+
+### Requerimiento 070
+
+- **Fecha**: 2026-03-05 13:40
+- **Requerimiento**: Cursor pointer en botones y enlaces.
+- **Información adicional**: Mejora el feedback visual indicando que un elemento es interactivo.
+- **Interpretación**:
+  1. Meta-test que verifica la presencia de `cursor: pointer` o `cursor-pointer` (Tailwind) en etiquetas `<button>` y `<a>`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Pendiente
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 13:42 - ✅ Pointer cursor enforced (91 tests)
+
 ### Requerimiento 069
 
 - **Fecha**: 2026-03-05 13:34

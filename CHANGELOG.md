@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.36] - 2026-03-05
+
+### Added
+
+- Meta-tests for UX and Security standards:
+  - Enforce pointer cursor on buttons and anchors.
+  - Disable text selection on buttons for better UX.
+  - Enforce `target="_blank"` and `rel="noopener noreferrer"` on external links.
+
 ## [1.4.35] - 2026-03-05
 
 ### Added

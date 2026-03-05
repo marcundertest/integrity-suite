@@ -37,6 +37,7 @@ describe('Integrity Suite', () => {
     return ['.ts', '.js', '.tsx', '.jsx'].includes(ext) && !f.startsWith(testsDir);
   });
   const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
+  const hasTailwind = pkg.dependencies?.tailwindcss || pkg.devDependencies?.tailwindcss;
 
   describe('Level 0: Base Environment & Cleanup', () => {
     it('should be a git repository', () => {
@@ -882,6 +883,66 @@ describe('Integrity Suite', () => {
         expect(content, `Missing lang attribute on <html> in ${file}`).toMatch(
           /<html[^>]+lang\s*=/i,
         );
+      });
+    });
+
+    it('buttons and anchors should have pointer cursor', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        const elements = content.match(/<(button|a)[^>]*>/gi) ?? [];
+        elements.forEach((el) => {
+          if (hasTailwind) {
+            expect(el, `Missing cursor-pointer in ${file}: ${el}`).toMatch(
+              /class\s*=\s*["'][^"']*cursor-pointer/,
+            );
+          } else {
+            expect(el, `Missing cursor:pointer in ${file}: ${el}`).toMatch(
+              /style\s*=\s*["'][^"']*cursor\s*:\s*pointer/,
+            );
+          }
+        });
+      });
+    });
+
+    it('button content should not be selectable', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        const buttons = content.match(/<button[^>]*>/gi) ?? [];
+        buttons.forEach((btn) => {
+          if (hasTailwind) {
+            expect(btn, `Missing select-none in ${file}: ${btn}`).toMatch(
+              /class\s*=\s*["'][^"']*select-none/,
+            );
+          } else {
+            expect(btn, `Missing user-select:none in ${file}: ${btn}`).toMatch(
+              /style\s*=\s*["'][^"']*user-select\s*:\s*none/,
+            );
+          }
+        });
+      });
+    });
+
+    it('external links should use target _blank with rel noopener noreferrer', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        const externalLinks = content.match(/<a[^>]*href=["']https?:\/\/[^"']+["'][^>]*>/gi) ?? [];
+        externalLinks.forEach((link) => {
+          expect(link, `External link without target="_blank" in ${file}`).toMatch(
+            /target\s*=\s*["']_blank["']/,
+          );
+          expect(link, `External link missing rel="noopener noreferrer" in ${file}`).toMatch(
+            /rel\s*=\s*["'][^"']*(noopener|noreferrer)/,
+          );
+        });
       });
     });
   });
