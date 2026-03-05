@@ -77,9 +77,9 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
   - `package.json` (estado: modificado)
 - **Tests**:
   - `pnpm validate-project` (estado: ejecutado)
-- **Estado**: Pendiente
+- **Estado**: Aprobado
 - **Resultados de los tests**:
-  - **Iteración 01**: 2026-03-05 02:30 - ✅ Added typographic convention hygiene checks for Spanish and English phrasing over source and documentation (version 1.4.13)
+  - **Iteración 01**: 2026-03-05 02:30 - ✅ Added typographic convention hygiene checks for Spanish and English phrasing over source and documentation (version 1.4.14)
 
 ### Requerimiento 047
 
