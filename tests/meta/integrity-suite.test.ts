@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
 describe('Integrity Suite', () => {
   const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -378,6 +379,8 @@ describe('Integrity Suite', () => {
         'blob-report',
         'src/__tests__',
         '.vitest-results',
+        '.integrity-suite/integrity-suite.sha256',
+        '.integrity-suite/.user_secret',
       ];
       lines.forEach((line) => {
         const norm = normalize(line);
@@ -389,12 +392,12 @@ describe('Integrity Suite', () => {
       });
     });
 
-    it('should forbid commits if the latest requirement is not Approved', () => {
+    it('should forbid commits if the latest requirement is not Approved and Signed', () => {
       const reqPath = path.join(rootDir, '.integrity-suite', 'docs', 'requirements.md');
+      const secretPath = path.join(rootDir, '.integrity-suite', '.user_secret');
       expect(fs.existsSync(reqPath), 'requirements.md is missing').toBe(true);
       const content = fs.readFileSync(reqPath, 'utf8');
 
-      // Find the "## Historial de requerimientos" section to ignore templates
       const historyParts = content.split('## Historial de requerimientos');
       expect(
         historyParts.length,
@@ -402,22 +405,59 @@ describe('Integrity Suite', () => {
       ).toBeGreaterThan(1);
 
       const historySection = historyParts[1];
-      const reqBlocks = historySection.split('\n### Requerimiento');
+      const reqBlocks = historySection.split(/\n### Requerimiento\s+/);
 
       expect(
         reqBlocks.length,
         'No requirements found in history section of requirements.md',
       ).toBeGreaterThan(1);
 
-      const latestReq = reqBlocks[1];
+      const latestReqRaw = reqBlocks[1];
+      const latestIdMatch = latestReqRaw.match(/^(\d+)/);
+      const latestId = latestIdMatch ? latestIdMatch[1] : 'unknown';
+
       // Ensure it contains "- **Estado**: Aprobado"
       expect(
-        latestReq,
-        'The latest requirement must be marked as Approved by the user before committing.',
+        latestReqRaw,
+        `The latest requirement (#${latestId}) must be marked as Approved by the user before committing.`,
       ).toContain('- **Estado**: Aprobado');
 
-      // Point 9: Verify there is at least one approved requirement in the history (not just the latest template)
-      const approvedCount = (historySection.match(/- \*\*Estado\*\*:\s*Aprobado/g) || []).length;
+      // VERIFY SEALS for high-security requirements (ID >= 129)
+      const approvedBlocks = reqBlocks.filter((block) => block.includes('- **Estado**: Aprobado'));
+
+      approvedBlocks.forEach((block) => {
+        const idMatch = block.match(/^(\d+)/);
+        if (!idMatch) return;
+        const id = idMatch[1];
+        const idNum = parseInt(id, 10);
+
+        // Security transition: Force seals for ID >= 129
+        if (idNum < 129) return;
+
+        const sealMatch = block.match(/- \*\*Sello de usuario\*\*:\s*([a-f0-9]{64})/i);
+        expect(
+          sealMatch,
+          `High-security Requirement #${id} is marked as Approved but missing a valid "Sello de usuario" (64-char hex hash).`,
+        ).not.toBeNull();
+
+        const providedSeal = sealMatch![1].toLowerCase();
+
+        // Calculate expected seal
+        expect(
+          fs.existsSync(secretPath),
+          'FATAL: .integrity-suite/.user_secret is missing. The system cannot verify user approvals for high-security requirements. Please create this file with your secret string.',
+        ).toBe(true);
+
+        const secret = fs.readFileSync(secretPath, 'utf8').trim();
+        const expectedSeal = createHash('sha256').update(`${id}Aprobado${secret}`).digest('hex');
+
+        expect(
+          providedSeal,
+          `Requirement #${id} has an INVALID "Sello de usuario". The agent cannot forge this signature without the secret.`,
+        ).toBe(expectedSeal);
+      });
+
+      const approvedCount = approvedBlocks.length;
       expect(
         approvedCount,
         'requirements.md must have at least one Approved requirement in its history',
@@ -606,7 +646,6 @@ describe('Integrity Suite', () => {
         .filter((l) => l && !l.startsWith('#'));
 
       const coreKitPatterns = [
-        '.integrity-suite',
         '.integrity-suite/docs',
         '.integrity-suite/docs/prompt.md',
         '.integrity-suite/docs/workflow.md',
@@ -654,6 +693,7 @@ describe('Integrity Suite', () => {
       '.integrity-suite/docs/prompt.md',
       '.integrity-suite/docs/workflow.md',
       '.integrity-suite/scripts/',
+      '.integrity-suite/.user_secret',
       'tests/meta/integrity-suite.test.ts',
     ];
 
@@ -1752,11 +1792,17 @@ describe('Integrity Suite', () => {
         });
     });
 
-    it('should ignore .env files in git', () => {
+    it('should ignore security-sensitive files in git', () => {
       const gitignorePath = path.join(rootDir, '.gitignore');
       expect(fs.existsSync(gitignorePath), '.gitignore is missing').toBe(true);
       const content = fs.readFileSync(gitignorePath, 'utf8');
       expect(content, '.gitignore must exclude .env').toMatch(/^\.env$/m);
+      expect(content, '.gitignore must exclude .user_secret').toMatch(
+        /^\.integrity-suite\/\.user_secret$/m,
+      );
+      expect(content, '.gitignore must exclude integrity-suite.sha256').toMatch(
+        /^\.integrity-suite\/integrity-suite\.sha256$/m,
+      );
     });
 
     it('should detect potential hardcoded secrets', () => {

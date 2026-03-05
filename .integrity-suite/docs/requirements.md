@@ -19,6 +19,7 @@ Utilizar la siguiente plantilla para cada requerimiento que sea testeable:
 - **Tests**:
   - `[ruta del test]` (estado: [creado|modificado|eliminado])
 - **Estado**: [Pendiente|Aprobado]
+- **Sello de usuario**: [Obligatorio si Aprobado (sha256: ID + Estado + Secret)]
 - **Resultados de los tests**:
   - **Iteración [ID]**: yyyy-MM-dd HH:mm - [Resultado]
 ```
@@ -36,6 +37,7 @@ Y la siguiente para cada requerimiento que no sea testeable:
 - **Archivos afectados**:
   - `[ruta del archivo]` (estado: [creado|modificado|eliminado])
 - **Estado**: [Pendiente|Aprobado]
+- **Sello de usuario**: [Obligatorio si Aprobado (sha256: ID + Estado + Secret)]
 - **Razón**: [Razón por la cual no es testeable]
 ```
 
@@ -62,6 +64,25 @@ Este es un ejemplo:
 Los requerimientos deben estar ordenados cronológicamente (del más reciente al más antiguo).
 
 ## Historial de requerimientos
+
+### Requerimiento 129
+
+- **Fecha**: 2026-03-05 15:24
+- **Requerimiento**: Blindar el sistema de aprobación para evitar que el agente apruebe en nombre del usuario.
+- **Información adicional**: El sistema actual de marcar como "Aprobado" es vulnerable a que el agente edite el archivo `requirements.md`. Se requiere un mecanismo de "Firma de Usuario" (Sello) basado en un secreto que el agente no conozca.
+- **Interpretación**:
+  1. Implementar en `integrity-suite.test.ts` una validación obligatoria de un campo `- **Sello de usuario**: [hash]` para todo requerimiento en estado `Aprobado`.
+  2. El hash debe ser `sha256(ID + Estado + SECRETO)`.
+  3. El `SECRETO` residirá en `.integrity-suite/.user_secret` (gitignored).
+  4. El agente tiene prohibido leer o modificar `.integrity-suite/.user_secret`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `.integrity-suite/.user_secret` (estado: creado por el usuario)
+- **Estado**: Aprobado
+- **Sello de Usuario**: b434000ef87e0f8f68dc79bad1f5a9416aa9eacdd061f72f58247277970ebed9
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 15:25 - ✅ Double-Key Security Verified.
 
 ### Requerimiento 128
 

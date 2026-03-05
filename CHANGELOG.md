@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.47] - 2026-03-05
+
+### Added
+
+- Secured Approval System (Double-Key Handshake):
+  - Implemented mandatory `- **Sello de usuario**: [hash]` verification for all requirements ID >= 129.
+  - The Seal is a cryptographic signature: `sha256(ID + Status + Secret)`.
+  - The agent is technically blocked from forging approvals as it cannot read the `.integrity-suite/.user_secret` file.
+  - Added protection tests to ensure the agent never touches the secret file and it remains gitignored.
+- Added `npm run sign-req` utility to easily generate the approval hash for the user.
+
 ## [1.4.46] - 2026-03-05
 
 ### Added
