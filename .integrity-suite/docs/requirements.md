@@ -63,6 +63,25 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 055
+
+- **Fecha**: 2026-03-05 11:04
+- **Requerimiento**: Forzar la limpieza de variables e imports no utilizados mediante tsconfig.
+- **Información adicional**: Se busca evitar que el agente deje "objetos olvidados" tras refactorizaciones que el compilador puede detectar automáticamente.
+- **Interpretación**:
+  1. Activadas las opciones `noUnusedLocals` y `noUnusedParameters` en `tsconfig.json`.
+  2. Nuevo meta-test en Level 3 que verifica que estas opciones estén presentes y en `true`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tsconfig.json` (estado: modificado)
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `package.json` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 11:05 - ✅ TSC strictness enforced (75 tests)
+
 ### Requerimiento 054
 
 - **Fecha**: 2026-03-05 11:02

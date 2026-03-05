@@ -609,6 +609,13 @@ describe('Integrity Suite', () => {
       expect(tsconfig.compilerOptions.noEmitOnError, 'noEmitOnError must be true').toBe(true);
     });
 
+    it('should have noUnusedLocals and noUnusedParameters enabled in tsconfig', () => {
+      expect(tsconfig.compilerOptions.noUnusedLocals, 'noUnusedLocals must be true').toBe(true);
+      expect(tsconfig.compilerOptions.noUnusedParameters, 'noUnusedParameters must be true').toBe(
+        true,
+      );
+    });
+
     it('should have a modern target in tsconfig.json', () => {
       expect(tsconfig.compilerOptions.target).toBeDefined();
       expect(['ESNext', 'ES2022', 'ES2021']).toContain(tsconfig.compilerOptions.target);
