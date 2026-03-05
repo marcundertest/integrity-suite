@@ -378,7 +378,8 @@ describe('Integrity Suite', () => {
       allSourceFiles.forEach((file) => {
         const parts = file.split(path.sep);
         if (!parts.includes('tests')) return;
-        if (path.basename(file) === 'integrity-suite.test.ts') return;
+        const metaTestPath = path.join(rootDir, 'tests', 'meta', 'integrity-suite.test.ts');
+        if (file === metaTestPath) return;
 
         const content = fs
           .readFileSync(file, 'utf8')
@@ -421,6 +422,10 @@ describe('Integrity Suite', () => {
       expect(content).toMatch(/functions:\s*100/);
       expect(content).toMatch(/statements:\s*100/);
       expect(content).toMatch(/branches:\s*100/);
+      expect(content, 'vitest.config.ts missing all: true coverage definition').toMatch(
+        /all:\s*true/,
+      );
+      expect(content, 'vitest.config.ts missing include definition').toContain('include:');
     });
 
     it('should enforce test coverage flag in package.json scripts', () => {

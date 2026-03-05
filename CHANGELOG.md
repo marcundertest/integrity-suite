@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.8] - 2026-03-05
+
+### Fixed
+
+- Strengthened test coverage metrics by enforcing `all: true` and `include: ['src/**']` inside `vitest.config.ts`, ensuring missing tests are properly detected array functionality additions.
+- Secured the cross-platform path slashes check meta-test against false negatives by comparing absolute file paths instead of relying only on `basename`.
+- Repaired `"test:unit"` script in `package.json` by removing `src` as an incorrect test folder specifier flag for Vitest.
+
 ## [1.4.7] - 2026-03-05
 
 ### Fixed

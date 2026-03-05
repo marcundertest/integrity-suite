@@ -63,6 +63,30 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 042
+
+- **Fecha**: 2026-03-05 01:30
+- **Requerimiento**: Tapar brechas de falsos positivos en cobertura y fisuras estructurales.
+- **Información adicional**: Se han detectado los siguientes detalles:
+  1. La cobertura reportaba 100% sobre cero archivos porque `vitest` requiere de forma explícita `all: true` y una directiva `include` para medir todo el código aunque no haya sido importado por un test que falla o inexistente.
+  2. La exención en `should ensure all tests are cross-platform` usaba `basename` y podría eximir falsamente un `integrity-suite.test.ts` secundario creado en otro directorio, riesgo solucionado forzando la ruta completa absoluta.
+  3. El script de tests unitarios apuntaba en vitest con `tests/unit src` lo que usaba `src` como filtro de fichero de tests. Eliminado el filtro innecesario.
+- **Interpretación**:
+  1. Configurar `include: ['src/**']` y `all: true` en `vitest.config.ts`.
+  2. En el Meta-test L6 usar aserciones de Regex para verificar la existencia explícita de `all: true` e `include:` en el archivo de configuración.
+  3. Resolver el bypass cambiando la comparación de `basename` por la ruta absoluta calculada.
+  4. Quitar `src` del script `test:unit` en `package.json`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `package.json` (estado: modificado)
+  - `vitest.config.ts` (estado: modificado)
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 01:30 - ✅ Hardened coverage settings validated (version 1.4.8)
+
 ### Requerimiento 041
 
 - **Fecha**: 2026-03-05 01:25
