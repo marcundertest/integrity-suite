@@ -98,6 +98,13 @@ describe('Integrity Suite', () => {
       );
     });
 
+    it('should have a pnpm-lock.yaml lockfile', () => {
+      expect(
+        fs.existsSync(path.join(rootDir, 'pnpm-lock.yaml')),
+        'pnpm-lock.yaml is missing — reproducible builds require a lockfile',
+      ).toBe(true);
+    });
+
     it('should use PNPM and forbid obsolete npm/yarn lockfiles', () => {
       expect(
         fs.existsSync(path.join(rootDir, 'package-lock.json')),
@@ -238,6 +245,30 @@ describe('Integrity Suite', () => {
       }
     });
 
+    it('should have requirements with chronologically consistent dates', () => {
+      const reqPath = path.join(rootDir, '.integrity-suite', 'docs', 'requirements.md');
+      if (!fs.existsSync(reqPath)) return;
+      const content = fs.readFileSync(reqPath, 'utf8');
+      const historyParts = content.split('## Historial de requerimientos');
+      if (historyParts.length < 2) return;
+
+      const reqBlocks = historyParts[1].split('\n### Requerimiento');
+      const dates: Date[] = [];
+
+      for (let i = 1; i < reqBlocks.length; i++) {
+        const match = reqBlocks[i].match(/- \*\*Fecha\*\*:\s*(\d{4}-\d{2}-\d{2})/);
+        if (match) dates.push(new Date(match[1]));
+      }
+
+      // Requirements are newest-first, so dates must be descending
+      for (let i = 0; i < dates.length - 1; i++) {
+        expect(
+          dates[i].getTime(),
+          `Date in requirement ${i + 1} is older than requirement ${i + 2} — check order`,
+        ).toBeGreaterThanOrEqual(dates[i + 1].getTime());
+      }
+    });
+
     it('should have a zero-tolerance validation script with security audit', () => {
       const script = pkg.scripts['validate-project'];
       expect(script).toContain('pnpm lint');
@@ -258,6 +289,23 @@ describe('Integrity Suite', () => {
 
     it('should fail on any linting warning', () => {
       expect(pkg.scripts['lint']).toContain('--max-warnings 0');
+    });
+
+    it('should enforce critical ESLint rules for AI-safety', () => {
+      const eslintPath = path.join(rootDir, '.eslintrc.json');
+      expect(fs.existsSync(eslintPath), '.eslintrc.json is missing').toBe(true);
+      const eslintContent = fs.readFileSync(eslintPath, 'utf8');
+      const eslint = JSON.parse(eslintContent);
+      const rules = eslint.rules || {};
+
+      expect(rules['@typescript-eslint/no-explicit-any'], 'no-explicit-any must be error').toBe(
+        'error',
+      );
+      expect(rules['@typescript-eslint/ban-ts-comment'], 'ban-ts-comment must be error').toBe(
+        'error',
+      );
+      expect(rules['no-console'], 'no-console must be error').toBe('error');
+      expect(rules['no-warning-comments'], 'no-warning-comments must be configured').toBeDefined();
     });
   });
 
@@ -340,13 +388,15 @@ describe('Integrity Suite', () => {
       });
     });
 
-    it('should limit component size to 300 lines', () => {
-      const compDir = path.join(rootDir, 'src', 'components');
-      if (fs.existsSync(compDir)) {
-        getFiles(compDir).forEach((file) => {
+    it('should limit file size to 300 lines in src/', () => {
+      const srcDir = path.join(rootDir, 'src');
+      if (fs.existsSync(srcDir)) {
+        getFiles(srcDir).forEach((file) => {
+          const ext = path.extname(file);
+          if (!['.ts', '.tsx', '.js', '.jsx'].includes(ext)) return;
           const content = fs.readFileSync(file, 'utf8');
           const lineCount = content.split('\n').length;
-          expect(lineCount, `Component ${file} exceeds 300 lines`).toBeLessThanOrEqual(300);
+          expect(lineCount, `File ${file} exceeds 300 lines`).toBeLessThanOrEqual(300);
         });
       }
     });
@@ -427,6 +477,25 @@ describe('Integrity Suite', () => {
         /all:\s*true/,
       );
       expect(content, 'vitest.config.ts missing include definition').toContain('include:');
+      expect(content, 'vitest.config.ts include must target src/').toMatch(
+        /include:\s*\[['"`]src\/\*\*['"`]\]/,
+      );
+    });
+
+    it('should configure vitest timeouts', () => {
+      const vitestConfigPath = path.join(rootDir, 'vitest.config.ts');
+      expect(fs.existsSync(vitestConfigPath), 'vitest.config.ts does not exist').toBe(true);
+
+      const content = fs.readFileSync(vitestConfigPath, 'utf8');
+      expect(content, 'vitest.config.ts missing testTimeout').toContain('testTimeout:');
+      expect(content, 'vitest.config.ts missing hookTimeout').toContain('hookTimeout:');
+    });
+
+    it('should have a src/ directory as the coverage target', () => {
+      expect(
+        fs.existsSync(path.join(rootDir, 'src')),
+        'src/ directory is missing — coverage target does not exist',
+      ).toBe(true);
     });
 
     it('should enforce test coverage flag in package.json scripts', () => {

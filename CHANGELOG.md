@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.11] - 2026-03-05
+
+### Added
+
+- Added pipeline safety expectation for ensuring `pnpm-lock.yaml` presence to guarantee reproducible builds.
+- Mandated chronological descending sanity sorting check for the Requirements log history timeline.
+- Configured protective timeouts by enforcing `vitest` `testTimeout` and `hookTimeout` properties in `vitest.config.ts`.
+- Guardrails implemented bounding the size of all underlying files in `src/` to 300 LOC alongside its `src/components/` specific rule.
+- Added explicit AI-safety assertion guaranteeing the baseline rules implementation (`no-explicit-any`, `no-console`, `ban-ts-comment`) in `.eslintrc.json`.
+- Imposed rigorous validation against vitest config's coverage path forcing `include: ['src/**']` syntax as well as necessitating explicit existence of the instrumented `src/` mapping schema.
+
 ## [1.4.10] - 2026-03-05
 
 ### Fixed

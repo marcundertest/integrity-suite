@@ -63,6 +63,30 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 045
+
+- **Fecha**: 2026-03-05 01:45
+- **Requerimiento**: Blindaje integral de arquitectura, existencias, tiempos y dependencias.
+- **Información adicional**: Se han implementado mecanismos de defensa robustos en la Integrity Suite, cubriendo existencia de lockfiles, límites de tamaño para cualquier tipo de código (no solo components), consistencia de requerimientos, reglas ESLint estrictas, tiempos de test y existencia de directorio base de cobertura.
+- **Interpretación**:
+  1. Verificar tamaño de archivo <= 300 líneas extendido transversalmente a `src/`.
+  2. Impedir que `vitest.config.ts` evada o corrompa la máscara de cobertura `src/**`.
+  3. Prevenir falta accidental del `pnpm-lock.yaml`.
+  4. Obligar la existencia del directorio fuente `src/` que instrumenta cobertura.
+  5. Asegurar consistencia temporal entre fechas de requerimientos (orden cronológico).
+  6. Confirmar la pervivencia de reglas de `no-any`, `no-console` y directivas en `.eslintrc.json`.
+  7. Implementar barreras de tiempo (`timeout`) a ejecuciones de suite en Vitest.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `vitest.config.ts` (estado: modificado)
+  - `package.json` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 01:45 - ✅ Complete Integrity hardening via 7 major fixes (version 1.4.11)
+
 ### Requerimiento 044
 
 - **Fecha**: 2026-03-05 01:40
