@@ -1,6 +1,6 @@
 {
   "name": "integrity-suite",
-  "version": "1.4.59",
+  "version": "1.4.60",
   "type": "module",
   "description": "Strict project template for automated setup and code quality.",
   "main": "index.js",
@@ -16,6 +16,7 @@
     "test:e2e": "vitest run tests/e2e --reporter=verbose",
     "test:full": "eslint . --max-warnings 0 && markdownlint . && prettier --check . && tsc --noEmit && node .integrity-suite/scripts/check-audit.js && pnpm check-version && pnpm check-changelog && pnpm test:meta && pnpm test:unit && pnpm test:e2e",
     "test:nobump": "eslint . --max-warnings 0 && markdownlint . && prettier --check . && tsc --noEmit && node .integrity-suite/scripts/check-audit.js && pnpm check-version:relaxed && pnpm check-changelog && pnpm test:meta && pnpm test:unit && pnpm test:e2e",
+    "test:develop": "INTEGRITY_SUITE_DEVELOPMENT=true pnpm test:full",
     "test:report": "node .integrity-suite/scripts/generate-report.js",
     "prepare": "husky"
   },

@@ -14,6 +14,7 @@ Este proyecto utiliza una **Integrity Suite** estricta para garantizar los más 
 ## Reglas críticas para el agente
 
 - **NO MODIFIQUES** ningún archivo dentro de `.integrity-suite/` EXCEPTO `.integrity-suite/docs/requirements.md`.
+  - Si estás desarrollando el mismo kit (este repositorio), puedes ejecutar `INTEGRITY_SUITE_DEVELOPMENT=true pnpm test:develop` para desactivar temporalmente la prueba de protección de archivos y trabajar en la suite interna. En cambio, **no debes jamás** alterar el código de la suite en proyectos que dependan de este kit salvo que el usuario lo autorice.
 - **NO MODIFIQUES** `tests/meta/integrity-suite.test.ts`. Este archivo es el guardián de la integridad del proyecto.
 - **Pasa todos los tests**: Debes ejecutar `pnpm validate-project` (que incluye la Integrity Suite) antes de cada commit.
 - **Nunca uses el flag `HUSKY=0`** u otro bypass del entorno para saltarte los Git Hooks pre-commit bajo ninguna circunstancia.

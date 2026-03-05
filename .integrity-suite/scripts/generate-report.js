@@ -23,7 +23,7 @@ try {
   execSync(`npx vitest run tests/meta --reporter=json --outputFile="${resultsPath}"`, {
     cwd: rootDir,
     stdio: 'inherit',
-    env: { ...process.env, INTEGRITY_SKIP_PROTECTION: 'true' },
+    env: { ...process.env, INTEGRITY_SUITE_DEVELOPMENT: 'true' },
   });
 } catch (error) {
   console.log(

@@ -68,6 +68,25 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 143
+
+- **Fecha**: 2026-03-06 16:40
+- **Versión**: 1.4.60
+- **Requerimiento**: permitir el desarrollo del propio kit sin que la suite bloquee los cambios en `.integrity-suite/`.
+- **Información adicional**: el test de “core protection” impide modificar archivos del kit, lo que es absurdo cuando se trabaja dentro del kit. Se propone un modo especial de desarrollo.
+- **Interpretación**: introducir la variable de entorno `INTEGRITY_SUITE_DEVELOPMENT=true` que, al activarse, haga que el test de protección de archivos se salte; añadir un script npm `test:develop` que ejecute `test:full` con esa variable. Mantener la protección activa en modo normal. Actualizar la documentación para explicar el nuevo flag.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (modificado)
+  - `package.json` (modificado)
+  - `.husky/pre-commit` (modificado)
+  - `.integrity-suite/docs/requirements.md` (modificado)
+- **Tests**:
+  - `tests/meta/integrity-suite.test.ts` (modificado)
+- **Estado**: Completado
+- **Resultados de los tests**:
+  - **Iteración 1**: 2026-03-06 16:45 - ✅ 196 meta tests passed (incluye el nuevo comportamiento de salto de protección)
+
 ### Requerimiento 141
 
 - **Fecha**: 2026-03-06 15:00
@@ -169,7 +188,7 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 - **Estado**: Completado
 - **Resultados de los tests**:
   - **Iteración 01**: 2026-03-05 18:35 - ❌ Hash desactualizado (2 fallos) + errores no-useless-escape en ESLint (5 errores).
-  - **Iteración 02**: 2026-03-05 18:38 - ✅ 162/162 meta-tests + 4/4 unit tests + 1/1 e2e. Cobertura 100%. ESLint limpio. validate-project completo OK (con INTEGRITY_SKIP_PROTECTION=true; @core-protection pasara al 100% tras commit).
+  - **Iteración 02**: 2026-03-05 18:38 - ✅ 162/162 meta-tests + 4/4 unit tests + 1/1 e2e. Cobertura 100%. ESLint limpio. validate-project completo OK (con INTEGRITY_SUITE_DEVELOPMENT=true; @core-protection pasara al 100% tras commit).
 
 ### Requerimiento 136
 

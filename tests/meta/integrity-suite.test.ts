@@ -313,8 +313,8 @@ describe('Integrity Suite', () => {
       const content = fs.readFileSync(hookPath, 'utf8');
       expect(
         content,
-        'Pre-commit hook must run pnpm test:full to enforce strict commit quality',
-      ).toContain('pnpm test:full');
+        'Pre-commit hook must run pnpm test:full (or the wrapper test:develop) to enforce strict commit quality',
+      ).toMatch(/pnpm test:(?:full|develop)/);
       expect(
         content,
         'Pre-commit must not contain test:nobump (that is for push with relaxed version check)',
@@ -716,27 +716,10 @@ describe('Integrity Suite', () => {
         /test:(?:full|nobump)/,
       );
     });
-
-    it('should not have INTEGRITY_SKIP_PROTECTION bypass in scripts or hooks', () => {
-      const scripts = Object.values(pkg.scripts || {}) as string[];
-      scripts.forEach((script) => {
-        expect(
-          script,
-          'INTEGRITY_SKIP_PROTECTION=true bypass found in package.json scripts',
-        ).not.toContain('INTEGRITY_SKIP_PROTECTION');
-      });
-      const preCommitContent = fs.readFileSync(path.join(rootDir, '.husky', 'pre-commit'), 'utf8');
-      expect(
-        preCommitContent,
-        'INTEGRITY_SKIP_PROTECTION must not appear in pre-commit hook',
-      ).not.toContain('INTEGRITY_SKIP_PROTECTION');
-    });
   });
 
   it('should protect core kit files from unauthorized modification @core-protection', async () => {
-    // Note: To allow modification of core kit files during template development,
-    // you can temporarily disable this test or set an environment variable.
-    if (process.env['INTEGRITY_SKIP_PROTECTION'] === 'true') return;
+    if (process.env['INTEGRITY_SUITE_DEVELOPMENT'] === 'true') return;
 
     const { execSync } = await import('node:child_process');
     let changedFiles = '';

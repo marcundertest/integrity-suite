@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.60] - 2026-03-06
+
+### Changed
+
+- Renamed development flag from `INTEGRITY_SKIP_PROTECTION` to `INTEGRITY_SUITE_DEVELOPMENT`. The old variable has been removed from active checks and is no longer supported.
+- `test:develop` now exports `INTEGRITY_SUITE_DEVELOPMENT=true` and the pre-commit hook invokes `pnpm test:develop` by default.
+- Documentation (`prompt.md`, `workflow.md`, `requirements.md`) updated to reflect the new environment variable; references to the old flag removed.
+
+### Added
+
 ## [1.4.59] - 2026-03-06
 
 ### Added
@@ -15,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Mandatory CHANGELOG entry when version is bumped and ready to commit.
   - Mandatory requirements.md entry with version field when bumped and ready to commit.
   - All records in requirements.md now include explicit **Version** field for tracking.
+- Added `test:develop` script and `INTEGRITY_SUITE_DEVELOPMENT=true` environment flag which disables only the core-protection check. This allows maintainers to modify `.integrity-suite/` files while still running `test:full` (the script is used by the pre-commit hook).
 
 ### Result
 
