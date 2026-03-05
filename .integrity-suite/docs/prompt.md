@@ -19,7 +19,7 @@ Este proyecto utiliza una **Integrity Suite** estricta para garantizar los más 
 - **Aprobación de commit**: Antes de cada commit, debes sugerir un mensaje de commit al usuario. El commit solo se permitirá si el usuario cambia el campo **Estado** a **Aprobado** en el historial de requerimientos.
 - **Documenta los requerimientos**: Eres responsable de mantener `.integrity-suite/docs/requirements.md` registrando cada requerimiento, su interpretación, los resultados de los tests y el campo **Estado: Pendiente**.
 - **Documenta los cambios**: Eres responsable de mantener `CHANGELOG.md`, siguiendo el formato establecido en el archivo.
-- **Idioma del agente**: Responde siempre en castellano.
+- **Idioma del agente**: Responde siempre en castellano. Sin embargo, advierte que **todo el código fuente (comentarios, variables, funciones)** DEBE estar estrictamente en inglés (sólo caracteres ASCII), de lo contrario la _Integrity Suite_ bloqueará el commit (Level 4: Hygiene).
 
 Este proyecto podría ya estar en desarrollo. Si tiene otros tests existentes en `tests/`, ejecútalos todos y reporta los resultados: cuántos pasan, cuántos fallan y el detalle de los errores.
 

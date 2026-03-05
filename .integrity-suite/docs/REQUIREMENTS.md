@@ -63,6 +63,22 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 039
+
+- **Fecha**: 2026-03-05 01:10
+- **Requerimiento**: Clarificar en `prompt.md` que el código fuente debe estar estrictamente en inglés/ASCII.
+- **Información adicional**: Hay una instrucción que indica al agente que responda en castellano. Para evitar confusiones, el agente podría empezar a nombrar variables o poner comentarios de código en castellano causando fallos en los tests del _Level 4: Hygiene_ de la _Integrity Suite_.
+- **Interpretación**:
+  1. Editar `.integrity-suite/docs/prompt.md` especificando claramente que, aunque las respuestas del agente sean en castellano, todo el código fuente (comentarios, variables, y funciones) debe mantenerse estrictamente en inglés/ASCII.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `prompt.md` (estado: modificado)
+- **Tests**:
+  - N/A, es un cambio puramente de meta-instrucciones.
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 01:10 - ✅ Prompt updated and clarification added (version 1.4.5)
+
 ### Requerimiento 038
 
 - **Fecha**: 2026-03-05 01:00
