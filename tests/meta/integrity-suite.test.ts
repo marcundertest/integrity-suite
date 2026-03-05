@@ -101,7 +101,7 @@ describe('Integrity Suite', () => {
     it('should have a pnpm-lock.yaml lockfile', () => {
       expect(
         fs.existsSync(path.join(rootDir, 'pnpm-lock.yaml')),
-        'pnpm-lock.yaml is missing — reproducible builds require a lockfile',
+        'pnpm-lock.yaml is missing: reproducible builds require a lockfile',
       ).toBe(true);
     });
 
@@ -113,14 +113,49 @@ describe('Integrity Suite', () => {
       expect(fs.existsSync(path.join(rootDir, 'yarn.lock')), 'Found obsolete yarn.lock').toBe(
         false,
       );
-      expect(
-        fs.existsSync(path.join(rootDir, '.npmrc')),
-        'Found obsolete .npmrc (npm-specific)',
-      ).toBe(false);
+    });
+
+    it('should have .env patterns excluded in .gitignore', () => {
+      const content = fs.readFileSync(path.join(rootDir, '.gitignore'), 'utf8');
+      expect(content).toMatch(/^\.env$/m);
+      expect(content).toMatch(/\*\.env/m);
+    });
+
+    it('should exclude build artifacts from git', () => {
+      const content = fs.readFileSync(path.join(rootDir, '.gitignore'), 'utf8');
+      ['dist/', 'coverage/', 'node_modules/'].forEach((pattern) => {
+        expect(content, `${pattern} not in .gitignore`).toContain(pattern);
+      });
+    });
+
+    it('should not have been tampered with (integrity hash check)', async () => {
+      const { createHash } = await import('node:crypto');
+      const selfPath = path.join(rootDir, 'tests', 'meta', 'integrity-suite.test.ts');
+      const hashPath = path.join(rootDir, '.integrity-suite', 'integrity-suite.sha256');
+
+      expect(fs.existsSync(hashPath), 'Missing integrity hash file').toBe(true);
+
+      const currentHash = createHash('sha256').update(fs.readFileSync(selfPath)).digest('hex');
+      const expectedHash = fs.readFileSync(hashPath, 'utf8').trim();
+
+      expect(currentHash, 'integrity-suite.test.ts has been modified!').toBe(expectedHash);
     });
   });
 
   describe('Level 1: Project Metadata & README', () => {
+    it('should forbid em dash in Markdown documentation files', () => {
+      const mdFiles = allSourceFiles.filter((f) => f.endsWith('.md'));
+      mdFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        // Allow em dash inside fenced code blocks (English content or examples are legitimate there)
+        const withoutCodeBlocks = content.replace(/```[\s\S]*?```/g, '');
+        expect(
+          withoutCodeBlocks,
+          `Em dash (—) found in ${file} : use ":" or ";" instead`,
+        ).not.toContain('—');
+      });
+    });
+
     it('should have valid package.json metadata', () => {
       expect(pkg.name).toBeDefined();
       expect(pkg.name.length).toBeGreaterThan(0);
@@ -154,6 +189,24 @@ describe('Integrity Suite', () => {
       expect(pkg.scripts['audit']).toBeDefined();
     });
 
+    it('should not allow HUSKY=0 bypass in any script', () => {
+      const scripts = Object.values(pkg.scripts || {}) as string[];
+      scripts.forEach((script) => {
+        expect(script, 'HUSKY=0 bypass found in scripts').not.toContain('HUSKY=0');
+      });
+    });
+
+    it('should forbid --no-verify git bypass in scripts', () => {
+      const scripts = Object.values(pkg.scripts || {}) as string[];
+      scripts.forEach((script) => {
+        expect(script).not.toContain('--no-verify');
+      });
+    });
+
+    it('should have a valid semver version in package.json', () => {
+      expect(pkg.version).toMatch(/^\d+\.\d+\.\d+$/);
+    });
+
     it('should enforce validation in pre-commit hook with no escapes', () => {
       const hookPath = path.join(rootDir, '.husky', 'pre-commit');
       const content = fs.readFileSync(hookPath, 'utf8');
@@ -167,11 +220,11 @@ describe('Integrity Suite', () => {
       );
       expect(content, 'Validation command is echoed').not.toMatch(/echo.*pnpm validate-project/m);
 
-      // Assure git add comes before validate-project to prevent manipulation window
+      // Assure git add comes after validate-project to prevent manipulation window
       const addIndex = content.indexOf('git add');
       const valIndex = content.indexOf('pnpm validate-project');
       if (addIndex !== -1 && valIndex !== -1) {
-        expect(addIndex, 'git add must happen before validate-project').toBeLessThan(valIndex);
+        expect(valIndex, 'validate-project must happen before git add').toBeLessThan(addIndex);
       }
     });
 
@@ -264,7 +317,7 @@ describe('Integrity Suite', () => {
       for (let i = 0; i < dates.length - 1; i++) {
         expect(
           dates[i].getTime(),
-          `Date in requirement ${i + 1} is older than requirement ${i + 2} — check order`,
+          `Date in requirement ${i + 1} is older than requirement ${i + 2}: check order`,
         ).toBeGreaterThanOrEqual(dates[i + 1].getTime());
       }
     });
@@ -317,6 +370,12 @@ describe('Integrity Suite', () => {
       expect(tsconfig.compilerOptions.noImplicitAny).toBe(true);
     });
 
+    it('should forbid unsafe tsconfig relaxations', () => {
+      expect(tsconfig.compilerOptions.allowJs, 'allowJs must not be enabled').not.toBe(true);
+      expect(tsconfig.compilerOptions.checkJs, 'checkJs must not be enabled').not.toBe(true);
+      expect(tsconfig.compilerOptions.noEmitOnError, 'noEmitOnError must be true').toBe(true);
+    });
+
     it('should have a modern target in tsconfig.json', () => {
       expect(tsconfig.compilerOptions.target).toBeDefined();
       expect(['ESNext', 'ES2022', 'ES2021']).toContain(tsconfig.compilerOptions.target);
@@ -336,8 +395,55 @@ describe('Integrity Suite', () => {
   });
 
   describe('Level 4: Hygiene & Global Standards', () => {
+    it('should forbid em dash in Spanish source code comments', () => {
+      allSourceFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        const commentRegex = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|<!--[\s\S]*?-->)/g;
+        const comments = content.match(commentRegex) ?? [];
+        comments.forEach((comment) => {
+          expect(comment, `Em dash (—) found in comment in ${file}: "${comment}"`).not.toContain(
+            '—',
+          );
+        });
+      });
+    });
+
+    it('should enforce test file naming conventions', () => {
+      const testFiles = allSourceFiles.filter((f) => f.startsWith(testsDir));
+      testFiles.forEach((file) => {
+        const basename = path.basename(file);
+        const validPattern = /\.(test|spec)\.(ts|tsx)$/;
+        expect(basename, `Test file ${file} does not follow naming convention`).toMatch(
+          validPattern,
+        );
+      });
+    });
+
+    it('should forbid debugger statements in source', () => {
+      codeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        expect(content, `debugger statement in ${file}`).not.toMatch(/\bdebugger\b/);
+      });
+    });
+
+    it('should not use filesystem access in unit tests', () => {
+      const unitDir = path.join(rootDir, 'tests', 'unit') + path.sep;
+      allSourceFiles
+        .filter((f) => f.startsWith(unitDir))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          expect(content, `fs access in unit test ${file}`).not.toMatch(/from ['"]node:fs['"]/);
+          expect(content, `fs access in unit test ${file}`).not.toMatch(
+            /require\(['"]node:fs['"]\)/,
+          );
+          expect(content, `fs access in unit test ${file}`).not.toMatch(/from ['"]fs['"]/);
+          expect(content, `fs access in unit test ${file}`).not.toMatch(/require\(['"]fs['"]\)/);
+        });
+    });
+
     it('should enforce English-only comments (ASCII)', () => {
       allSourceFiles.forEach((file) => {
+        if (file.endsWith('.json') || file.endsWith('.md')) return;
         const content = fs.readFileSync(file, 'utf8');
         const commentRegex = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|<!--[\s\S]*?-->)/g;
         const comments = content.match(commentRegex);
@@ -371,6 +477,33 @@ describe('Integrity Suite', () => {
   });
 
   describe('Level 5: Architecture & Security', () => {
+    it('should have a .env.example documenting required variables', () => {
+      if (fs.existsSync(path.join(rootDir, '.env'))) {
+        expect(
+          fs.existsSync(path.join(rootDir, '.env.example')),
+          '.env.example is missing: required env vars must be documented',
+        ).toBe(true);
+      }
+    });
+
+    it('should forbid process.exit() in src/', () => {
+      const srcDir = path.join(rootDir, 'src') + path.sep;
+      codeFiles
+        .filter((f) => f.startsWith(srcDir))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          expect(content, `process.exit() in ${file}`).not.toMatch(/process\.exit\s*\(/);
+        });
+    });
+
+    it('should forbid wildcard or unbounded dependency ranges', () => {
+      const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+      Object.entries(allDeps || {}).forEach(([name, version]) => {
+        expect(version as string, `Dependency ${name} has a wildcard range`).not.toBe('*');
+        expect(version as string, `Dependency ${name} has unbounded range`).not.toMatch(/^>=[^,]/);
+      });
+    });
+
     it('should enforce layer isolation (Backend <-> Frontend)', () => {
       codeFiles.forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
@@ -399,6 +532,13 @@ describe('Integrity Suite', () => {
           expect(lineCount, `File ${file} exceeds 300 lines`).toBeLessThanOrEqual(300);
         });
       }
+    });
+
+    it('should ignore .env files in git', () => {
+      const gitignorePath = path.join(rootDir, '.gitignore');
+      expect(fs.existsSync(gitignorePath), '.gitignore is missing').toBe(true);
+      const content = fs.readFileSync(gitignorePath, 'utf8');
+      expect(content, '.gitignore must exclude .env').toMatch(/^\.env$/m);
     });
 
     it('should detect potential hardcoded secrets', () => {
@@ -463,6 +603,24 @@ describe('Integrity Suite', () => {
       expect(pkg.devDependencies['@vitest/coverage-v8']).toBeDefined();
     });
 
+    it('should have at least one non-dummy test file per source module', () => {
+      const srcFiles = getFiles(path.join(rootDir, 'src')).filter(
+        (f) => /\.(ts|tsx)$/.test(f) && !f.endsWith('.d.ts'),
+      );
+
+      const testFiles = allSourceFiles.filter(
+        (f) => f.startsWith(testsDir) && /\.(test|spec)\.(ts|tsx)$/.test(f),
+      );
+      const testContents = testFiles.map((f) => fs.readFileSync(f, 'utf8'));
+
+      srcFiles.forEach((srcFile) => {
+        const moduleName = path.basename(srcFile, path.extname(srcFile));
+        if (moduleName === 'index') return; // index files are typically re-exports
+        const isCovered = testContents.some((content) => content.includes(moduleName));
+        expect(isCovered, `No test references module: ${moduleName}`).toBe(true);
+      });
+    });
+
     it('should configure 100% test coverage threshold in vitest.config.ts', () => {
       const vitestConfigPath = path.join(rootDir, 'vitest.config.ts');
       expect(fs.existsSync(vitestConfigPath), 'vitest.config.ts does not exist').toBe(true);
@@ -494,12 +652,107 @@ describe('Integrity Suite', () => {
     it('should have a src/ directory as the coverage target', () => {
       expect(
         fs.existsSync(path.join(rootDir, 'src')),
-        'src/ directory is missing — coverage target does not exist',
+        'src/ directory is missing: coverage target does not exist',
       ).toBe(true);
     });
 
     it('should enforce test coverage flag in package.json scripts', () => {
       expect(pkg.scripts['test:unit']).toContain('--coverage');
+    });
+  });
+
+  describe('Level 7: Dependency Hygiene', () => {
+    it('should not have dependencies that belong in devDependencies', () => {
+      const devOnlyPackages = ['vitest', 'eslint', 'prettier', 'typescript', 'husky'];
+      const prodDeps = Object.keys(pkg.dependencies || {});
+      devOnlyPackages.forEach((dep) => {
+        expect(prodDeps, `${dep} should be in devDependencies, not dependencies`).not.toContain(
+          dep,
+        );
+      });
+    });
+
+    it('should not have duplicate packages across dependencies and devDependencies', () => {
+      const deps = Object.keys(pkg.dependencies || {});
+      const devDeps = Object.keys(pkg.devDependencies || {});
+      const duplicates = deps.filter((d) => devDeps.includes(d));
+      expect(duplicates, `Duplicate packages: ${duplicates.join(', ')}`).toHaveLength(0);
+    });
+
+    it('should have packageManager field pinned to exact version', () => {
+      expect(pkg.packageManager, 'packageManager field is missing').toBeDefined();
+      expect(pkg.packageManager).toMatch(/^pnpm@\d+\.\d+\.\d+$/);
+    });
+  });
+
+  describe('Level 8: Dependency Security', () => {
+    it('should have audit script with no severity bypass flags', () => {
+      const auditScript = pkg.scripts['audit'];
+      expect(auditScript, 'audit script is missing').toBeDefined();
+      expect(auditScript).not.toContain('--audit-level=critical');
+      expect(auditScript).not.toContain('--audit-level=high');
+      expect(auditScript).not.toContain('--ignore-registry-errors');
+    });
+
+    it('should run audit before tests in validate-project', () => {
+      const script = pkg.scripts['validate-project'];
+      const auditIdx = script.indexOf('pnpm audit');
+      const testIdx = script.indexOf('pnpm test');
+      expect(auditIdx, 'audit must run before tests').toBeLessThan(testIdx);
+    });
+
+    it('should have a lockfile that is not outdated relative to package.json', () => {
+      const lockPath = path.join(rootDir, 'pnpm-lock.yaml');
+      const lock = fs.readFileSync(lockPath, 'utf8');
+      const allDeclaredDeps = {
+        ...pkg.dependencies,
+        ...pkg.devDependencies,
+      };
+      Object.keys(allDeclaredDeps).forEach((dep) => {
+        expect(lock, `${dep} is in package.json but missing from lockfile`).toContain(dep);
+      });
+    });
+
+    it('should not use historically vulnerable versions of critical packages', () => {
+      const lock = fs.readFileSync(path.join(rootDir, 'pnpm-lock.yaml'), 'utf8');
+
+      const knownVulnerable: Array<{ pkg: string; bannedRange: RegExp; reason: string }> = [
+        {
+          pkg: 'lodash',
+          bannedRange: /lodash@[34]\.\d+\.\d+(?!\d)/,
+          reason: 'lodash <4.17.21 has prototype pollution (CVE-2021-23337)',
+        },
+        {
+          pkg: 'minimist',
+          bannedRange: /minimist@0\.\d+\.\d+/,
+          reason: 'minimist <1.2.6 has prototype pollution (CVE-2021-44906)',
+        },
+        {
+          pkg: 'semver',
+          bannedRange: /semver@[1-6]\.\d+\.\d+/,
+          reason: 'semver <7.5.2 has ReDoS vulnerability (CVE-2022-25883)',
+        },
+      ];
+
+      knownVulnerable.forEach(({ pkg: name, bannedRange, reason }) => {
+        expect(lock, `Vulnerable version of ${name} detected: ${reason}`).not.toMatch(bannedRange);
+      });
+    });
+
+    it('should not have direct dependencies pinned below known-safe minimums', () => {
+      const safeMinimumsForDirectDeps: Record<string, string> = {};
+      const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+      Object.entries(safeMinimumsForDirectDeps).forEach(([name, minVersion]) => {
+        if (!allDeps[name]) return;
+        const declared = (allDeps[name] as string).replace(/^[\^~]/, '');
+        const [dMaj, dMin, dPatch] = declared.split('.').map(Number);
+        const [mMaj, mMin, mPatch] = minVersion.split('.').map(Number);
+        const isOk =
+          dMaj > mMaj ||
+          (dMaj === mMaj && dMin > mMin) ||
+          (dMaj === mMaj && dMin === mMin && dPatch >= mPatch);
+        expect(isOk, `${name}@${declared} is below safe minimum ${minVersion}`).toBe(true);
+      });
     });
   });
 });

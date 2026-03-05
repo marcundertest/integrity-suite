@@ -5,6 +5,13 @@ try {
   const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
   const currentVersion = pkg.version;
 
+  if (!/^\d+\.\d+\.\d+$/.test(currentVersion)) {
+    console.error(
+      `Error: Version in package.json (${currentVersion}) is not a valid semantic version (major.minor.patch).`,
+    );
+    process.exit(1);
+  }
+
   let oldVersion;
   try {
     const oldPkgContent = execSync('git show HEAD:package.json', {

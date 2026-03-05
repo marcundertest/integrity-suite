@@ -16,6 +16,7 @@ Este proyecto utiliza una **Integrity Suite** estricta para garantizar los más 
 - **NO MODIFIQUES** ningún archivo dentro de `.integrity-suite/` EXCEPTO `.integrity-suite/docs/requirements.md`.
 - **NO MODIFIQUES** `tests/meta/integrity-suite.test.ts`. Este archivo es el guardián de la integridad del proyecto.
 - **Pasa todos los tests**: Debes ejecutar `pnpm validate-project` (que incluye la Integrity Suite) antes de cada commit.
+- **Nunca uses el flag `HUSKY=0`** u otro bypass del entorno para saltarte los Git Hooks pre-commit bajo ninguna circunstancia.
 - **Aprobación de commit**: Antes de cada commit, debes sugerir un mensaje de commit al usuario. El commit solo se permitirá si el usuario cambia el campo **Estado** a **Aprobado** en el historial de requerimientos.
 - **Documenta los requerimientos**: Eres responsable de mantener `.integrity-suite/docs/requirements.md` registrando cada requerimiento, su interpretación, los resultados de los tests y el campo **Estado: Pendiente**.
 - **Documenta los cambios**: Eres responsable de mantener `CHANGELOG.md`, siguiendo el formato establecido en el archivo.

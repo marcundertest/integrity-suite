@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.13] - 2026-03-05
+
+### Added
+
+- Added typographic rules blocking improper English-style usage of the "em-dash" (\u2014) as an intra-sentence connector over Spanish translations alongside the README/Requirements documentation (`tests/meta/integrity-suite.test.ts`).
+- Included rule prohibiting "em-dash" injection over standard code comments ensuring linguistic compliance and ASCII purity.
+
+## [1.4.12] - 2026-03-05
+
+### Added
+
+- Unforgeable cryptographic integrity check tracking any adversarial changes to `integrity-suite.test.ts` via SHA256 stored inside `.integrity-suite/integrity-suite.sha256`.
+- Verified safety tracking of ignoring local `.env` values and arbitrary build output folders like `dist/` or `coverage/` directly in `.gitignore`.
+- Blacklisted local bypass arguments injected over scripts masking husky or other git verifiers (`HUSKY=0`, `--no-verify`).
+- TypeScript config fortified strictly rendering builds untrustworthy through blocking assertions over `allowJs`, `checkJs`, and enabling `noEmitOnError: true`.
+- Testing discipline extended explicitly demanding standardized test file names, penalizing leftover `debugger` breakpoints and completely forbidding unit-tests accessing the OS file system via `fs`.
+- `process.exit()` forcefully forbidden from general business logic modules (`src/`) rendering services intrinsically safe.
+- Formidable constraints explicitly barring "Dependency Hygiene" defects forbidding duplicates, wildcard (`*`) bounding specs, or dependency type confusion (mixing dependencies targeting into development only paths).
+
+### Fixed
+
+- Prevented early manipulation bypassing window by ordering validation logically inside `.husky/pre-commit` making `git add` execute succeeding `validate-project`.
+- Patched `check-version.js` strictly asserting semantic versioning increments via `/^\\d+\\.\\d+\\.\\d+$/` regular expressions.
+- Corrected global language parsing checks in `integrity-suite.test.ts` to evade JSON format evaluation.
+- Strictened hardcoded secret security policy strictly tying `.env` masking to existent tracking inside the Git Ignore.
+- Erased legacy obsolete check around global `.npmrc` matching the PNPM workflow philosophy.
+- Dropped aggressive scope restriction block (`scope-enum: never`) from the commit linter object allowing dynamic scopes in production implementations.
+- Enforced instruction mapping over `.integrity-suite/docs/prompt.md` banning manual environment variables such as `HUSKY=0`.
+
 ## [1.4.11] - 2026-03-05
 
 ### Added

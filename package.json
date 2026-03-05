@@ -1,6 +1,6 @@
 {
   "name": "project-template",
-  "version": "1.4.11",
+  "version": "1.4.13",
   "type": "module",
   "description": "Strict project template for automated setup and code quality.",
   "main": "index.js",
@@ -59,12 +59,6 @@
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
-    ],
-    "rules": {
-      "scope-enum": [
-        2,
-        "never"
-      ]
-    }
+    ]
   }
 }

@@ -63,6 +63,78 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 048
+
+- **Fecha**: 2026-03-05 02:30
+- **Requerimiento**: Prohibir el uso anglosajón de la raya em en textos en castellano y comentarios.
+- **Información adicional**: Se han introducido tests para evitar emplear el `em dash` (raya larga) de forma inapropiada como conector dentro de la misma oración.
+- **Interpretación**:
+  1. Test agregado en el Nivel 4 asegurando la inexistencia de la raya dentro de los comentarios en el código fuente de los archivos soportados (evitando falsos positivos).
+  2. Test agregado en el Nivel 1 para forzar la misma regla estricta sobre documentación limpia en los repositorios Markdown (`.md`), exceptuando el texto rodeado por codeblocks ` `.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `package.json` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Pendiente
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 02:30 - ✅ Added typographic convention hygiene checks for Spanish and English phrasing over source and documentation (version 1.4.13)
+
+### Requerimiento 047
+
+- **Fecha**: 2026-03-05 02:26
+- **Requerimiento**: Auditar versiones vulnerables conocidas y protección de bloqueos a _pnpm audit_ (Dependency Security).
+- **Información adicional**: Se han implementado nuevos checks en el Level 8 (`Dependency Security`) para mitigar vulnerabilidades y asegurar un entorno de bloqueo sólido.
+- **Interpretación**:
+  1. El test de `pnpm audit` valida explícitamente que no se están usando flags perniciosas que enmascaren o traguen errores `--audit-level=critical|high` o `--ignore-registry-errors`.
+  2. Implementado RegExp para certificar el orden de los scripts; garantizando que la auditoria precede al test (`validate-project`: pre-audit).
+  3. Comprobación fehaciente asegurando que todo sub-paquete directo listado figure sincronizadamente en `pnpm-lock.yaml`.
+  4. Lista Negra predefinida de librerías flagrantes en CVEs de `prototype-pollution` (Ej: `lodash <4`, `minimist <1.2`) y `ReDos` (`semver <7.5`) sobre el parseo Regex local de `pnpm-lock.yaml`.
+  5. Agregado candado base forzando límites en el parseo mínimo para salvaguardias mínimas configurables del repositorio `safeMinimumsForDirectDeps` en `integrity-suite`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `package.json` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 02:26 - ✅ Added static dependency CVE scanner and pipeline protection (version 1.4.13)
+
+### Requerimiento 046
+
+- **Fecha**: 2026-03-05 02:10
+- **Requerimiento**: Auditar dependencias, configuración TS y reglas base (Integrity hash) mas corrección de fallos y riesgos de pipeline detectados en validación.
+- **Información adicional**: Se identificaron falsos positivos y lagunas mitigando riesgos integrales además de tests críticos basados en revisiones de higiene, protección estricta contra manipulaciones (Integrity hash), y revisión de dependencias puras (Nivel 7).
+- **Interpretación**:
+  1. Test con SHA256 que bloquea alteraciones hostiles silenciosas a `.integrity-suite.test.ts`. El hash es contrastado frente al archivo `.integrity-suite/integrity-suite.sha256`.
+  2. Implementado RegExp para validar versión en `check-version.js` (`/^\d+\.\d+\.\d+$/`).
+  3. Test riguroso contra `\*\.env` y los artefactos de build dentro de `.gitignore`.
+  4. `.husky/pre-commit` ejecuta ahora `git add` después de `validate-project` para evitar huecos en seguridad.
+  5. Agregado chequeo para evitar comentarios `json` durante el parser ASCII con terminación temprana.
+  6. Removido falso test positivo del fichero obsoleto de configuración para el `pnpm` contra un `.npmrc`.
+  7. Comprobación sobre los scripts de NPM excluyendo variables passthrough nocivas (como `HUSKY=0` y `--no-verify`) y el prompt inhabilitando por decreto `HUSKY=0`.
+  8. Removida la regla global `scope-enum` en `commitlint`.
+  9. Agregadas opciones vitales del compilador: `noEmitOnError`, bloqueo a `allowJs` y `checkJs`.
+  10. Aseguramiento de convenciones formales: prohibidos `debugger` o archivos incoherentes bajo `tests/` y acceso a I/O base en Unit Tests con `fs`.
+  11. Obligación impuesta al directorio `src/` limitando invocar `process.exit()`.
+  12. Introducción de "Dependency Hygiene" (Nivel 7) confirmando la no-inclusión de dependencias falsas, repetitivas, versiones wildcards/ilimitadas, y `pnpm` inamovible.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `tsconfig.json` (estado: modificado)
+  - `.integrity-suite/docs/prompt.md` (estado: modificado)
+  - `.integrity-suite/scripts/check-version.js` (estado: modificado)
+  - `.husky/pre-commit` (estado: modificado)
+  - `package.json` (estado: modificado)
+  - `.integrity-suite/integrity-suite.sha256` (estado: creado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 02:10 - ✅ Added 14+ deep structural restrictions and fixed bugs. (version 1.4.12)
+
 ### Requerimiento 045
 
 - **Fecha**: 2026-03-05 01:45
