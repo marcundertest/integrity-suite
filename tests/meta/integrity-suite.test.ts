@@ -861,6 +861,19 @@ describe('Integrity Suite', () => {
         ).not.toMatch(/tabIndex\s*=\s*['"]\s*[1-9]/i);
       });
     });
+
+    it('should not use non-semantic elements as interactive controls', () => {
+      const htmlLikeFiles = allSourceFiles.filter((f) =>
+        ['.html', '.tsx', '.jsx'].includes(path.extname(f)),
+      );
+      htmlLikeFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        expect(
+          content,
+          `<div> or <span> with onClick in ${file}: use <button> or <a> instead`,
+        ).not.toMatch(/<(?:div|span)[^>]*onClick/i);
+      });
+    });
   });
 
   describe('Level 5: Architecture & Security', () => {

@@ -63,6 +63,23 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 068
+
+- **Fecha**: 2026-03-05 13:32
+- **Requerimiento**: Prohibir el uso de elementos no semánticos (`<div>`, `<span>`) como controles interactivos con `onClick`.
+- **Información adicional**: Mejora la accesibilidad (a11y) garantizando que los elementos interactivos sean detectables y operables por herramientas de asistencia. Se recomienda usar `<button>` o `<a>`.
+- **Interpretación**:
+  1. Nuevo meta-test en el Nivel 4 que escanea archivos en busca de `div` o `span` que posean un atributo `onClick`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `package.json` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 13:33 - ✅ Semantic elements validation enforced (87 tests)
+
 ### Requerimiento 067
 
 - **Fecha**: 2026-03-05 13:29
