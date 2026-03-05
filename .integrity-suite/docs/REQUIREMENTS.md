@@ -63,6 +63,28 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 049
+
+- **Fecha**: 2026-03-05 02:43
+- **Requerimiento**: Reforzar la validación del mensaje de commit: solo ASCII e inglés, sin scopes.
+- **Información adicional**: Se añaden dos meta-tests que escanean el historial de Git y un tercer test que verifica la configuración de `commitlint`. Además se crea `commitlint.config.js` con un plugin personalizado que rechaza mensajes no ASCII en tiempo real durante el commit.
+- **Interpretación**:
+  1. Test en Level 2 que recorre el historial de commits con `git log --format=%s` y falla si cualquier mensaje contiene caracteres fuera del rango ASCII (mensajes en castellano u otros idiomas).
+  2. Test en Level 2 que falla si algún mensaje de commit contiene un scope (patrón `type(scope):`), ya que el proyecto prohíbe scopes.
+  3. Test en Level 2 que importa dinámicamente `commitlint.config.js` y verifica que las reglas `scope-enum: [2, never]` y `subject-ascii-only: [2, always]` están presentes, y que el plugin que implementa `subject-ascii-only` es una función real.
+  4. Creación de `commitlint.config.js` como módulo ESM con el plugin inline que rechaza mensajes no ASCII en el hook `commit-msg`.
+  5. Eliminación del bloque `commitlint` de `package.json` (sustituido por el archivo de configuración dedicado).
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `commitlint.config.js` (estado: creado)
+  - `package.json` (estado: modificado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 02:43 - ✅ All tests pass with double-layer protection for commit message compliance (version 1.4.15)
+
 ### Requerimiento 048
 
 - **Fecha**: 2026-03-05 02:30

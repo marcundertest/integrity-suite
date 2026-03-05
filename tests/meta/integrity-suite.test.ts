@@ -207,6 +207,65 @@ describe('Integrity Suite', () => {
       expect(pkg.version).toMatch(/^\d+\.\d+\.\d+$/);
     });
 
+    it('should enforce English-only commit messages in git history', async () => {
+      const { execSync } = await import('node:child_process');
+      let log: string;
+      try {
+        log = execSync('git log --format=%s', {
+          cwd: rootDir,
+          stdio: ['pipe', 'pipe', 'ignore'],
+        }).toString();
+      } catch {
+        return; // No git history yet
+      }
+      const messages = log.split('\n').filter(Boolean);
+      messages.forEach((msg) => {
+        const isAscii = [...msg].every((char) => char.charCodeAt(0) <= 127);
+        expect(isAscii, `Non-English commit message found: "${msg}"`).toBe(true);
+      });
+    });
+
+    it('should forbid scopes in commit messages', async () => {
+      const { execSync } = await import('node:child_process');
+      let log: string;
+      try {
+        log = execSync('git log --format=%s', {
+          cwd: rootDir,
+          stdio: ['pipe', 'pipe', 'ignore'],
+        }).toString();
+      } catch {
+        return;
+      }
+      const scopePattern = /^[a-z]+\([^)]+\):/;
+      const messages = log.split('\n').filter(Boolean);
+      messages.forEach((msg) => {
+        expect(msg, `Commit with forbidden scope found: "${msg}"`).not.toMatch(scopePattern);
+      });
+    });
+
+    it('should enforce ASCII-only commit messages via commitlint plugin', async () => {
+      const configPath = path.join(rootDir, '.integrity-suite', 'scripts', 'commitlint.config.js');
+      expect(fs.existsSync(configPath), 'commitlint.config.js is missing').toBe(true);
+
+      const { default: commitlintConfig } = await import(configPath);
+
+      expect(
+        commitlintConfig.rules?.['scope-enum'],
+        'scope-enum rule must be set to never',
+      ).toEqual([2, 'never']);
+
+      expect(
+        commitlintConfig.rules?.['subject-ascii-only'],
+        'subject-ascii-only rule must be configured',
+      ).toEqual([2, 'always']);
+
+      const plugins: Array<{ rules: Record<string, unknown> }> = commitlintConfig.plugins ?? [];
+      const hasAsciiPlugin = plugins.some(
+        (plugin) => typeof plugin.rules?.['subject-ascii-only'] === 'function',
+      );
+      expect(hasAsciiPlugin, 'subject-ascii-only plugin rule is not implemented').toBe(true);
+    });
+
     it('should enforce validation in pre-commit hook with no escapes', () => {
       const hookPath = path.join(rootDir, '.husky', 'pre-commit');
       const content = fs.readFileSync(hookPath, 'utf8');
