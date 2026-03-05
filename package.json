@@ -1,6 +1,6 @@
 {
   "name": "integrity-suite",
-  "version": "1.4.54",
+  "version": "1.4.55",
   "type": "module",
   "description": "Strict project template for automated setup and code quality.",
   "main": "index.js",
@@ -18,6 +18,7 @@
     "test:meta:audit": "vitest run tests/meta --reporter=verbose -t @security-audit",
     "test:meta:consistency": "vitest run tests/meta --reporter=verbose -t @consistency",
     "test:meta:performance": "vitest run tests/meta --reporter=verbose -t @performance",
+    "test:meta:documentation": "vitest run tests/meta --reporter=verbose -t @documentation",
     "update-integrity-hash": "node .integrity-suite/scripts/update-hash.js",
     "test:unit": "vitest run tests/unit --coverage --reporter=verbose",
     "test:e2e": "vitest run tests/e2e --reporter=verbose",
@@ -56,6 +57,9 @@
     "vitest": "^4.0.18"
   },
   "packageManager": "pnpm@10.18.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "lint-staged": {
     "*.ts": [
       "eslint --fix",

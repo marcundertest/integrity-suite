@@ -152,6 +152,15 @@ describe('Integrity Suite', () => {
         'commit-msg hook must reference the integrity-suite commitlint config',
       ).toContain('.integrity-suite/scripts/commitlint.config.js');
     });
+
+    it('should have a .nvmrc or .node-version file for Node.js version pinning', () => {
+      const hasNvmrc = fs.existsSync(path.join(rootDir, '.nvmrc'));
+      const hasNodeVersion = fs.existsSync(path.join(rootDir, '.node-version'));
+      expect(
+        hasNvmrc || hasNodeVersion,
+        '.nvmrc or .node-version is missing: pin the Node.js version for reproducible environments',
+      ).toBe(true);
+    });
   });
 
   describe('Level 1: Project Metadata & README @metadata', () => {
@@ -665,12 +674,43 @@ describe('Integrity Suite', () => {
         '"update-integrity-hash" script must be registered in package.json',
       ).toBeDefined();
     });
+
+    it('should not have silent bypass patterns in validate-project', () => {
+      const script = pkg.scripts['validate-project'] as string;
+      expect(script, '|| true bypass in validate-project').not.toMatch(/\|\|\s*true/);
+      expect(script, '; true bypass in validate-project').not.toMatch(/;\s*true\b/);
+      expect(script, '&& exit 0 bypass in validate-project').not.toMatch(/&&\s*exit\s+0/);
+    });
+
+    it('should have a pre-push hook that runs the full validation', () => {
+      const prePushPath = path.join(rootDir, '.husky', 'pre-push');
+      expect(fs.existsSync(prePushPath), '.husky/pre-push hook is missing').toBe(true);
+      const prePushContent = fs.readFileSync(prePushPath, 'utf8');
+      expect(prePushContent, 'pre-push hook must run pnpm validate-project').toMatch(
+        /pnpm\s+validate/,
+      );
+    });
+
+    it('should not have INTEGRITY_SKIP_PROTECTION bypass in scripts or hooks', () => {
+      const scripts = Object.values(pkg.scripts || {}) as string[];
+      scripts.forEach((script) => {
+        expect(
+          script,
+          'INTEGRITY_SKIP_PROTECTION=true bypass found in package.json scripts',
+        ).not.toContain('INTEGRITY_SKIP_PROTECTION');
+      });
+      const preCommitContent = fs.readFileSync(path.join(rootDir, '.husky', 'pre-commit'), 'utf8');
+      expect(
+        preCommitContent,
+        'INTEGRITY_SKIP_PROTECTION must not appear in pre-commit hook',
+      ).not.toContain('INTEGRITY_SKIP_PROTECTION');
+    });
   });
 
   it('should protect core kit files from unauthorized modification @core-protection', async () => {
     // Note: To allow modification of core kit files during template development,
     // you can temporarily disable this test or set an environment variable.
-    if (process.env.INTEGRITY_SKIP_PROTECTION === 'true') return;
+    if (process.env['INTEGRITY_SKIP_PROTECTION'] === 'true') return;
 
     const { execSync } = await import('node:child_process');
     let changedFiles = '';
@@ -732,7 +772,6 @@ describe('Integrity Suite', () => {
       codeFiles.forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
         expect(content, `File ${file} contains @ts-ignore`).not.toContain('@ts-ignore');
-        expect(content, `File ${file} contains explicit "any" type`).not.toMatch(/:\s*any/);
         expect(content, `File ${file} contains explicit "any" cast`).not.toMatch(/<any>/);
         expect(content, `File ${file} contains explicit "any" cast`).not.toMatch(/as\s+any/);
         expect(content, `File ${file} contains @ts-expect-error`).not.toContain('@ts-expect-error');
@@ -812,6 +851,27 @@ describe('Integrity Suite', () => {
             `Double-assertion cast (as unknown as Type) in ${file}: this bypasses type safety entirely`,
           ).not.toMatch(/\bas\s+unknown\s+as\s+\w/);
         });
+    });
+
+    it('should have noFallthroughCasesInSwitch enabled in tsconfig.json', () => {
+      expect(
+        tsconfig.compilerOptions.noFallthroughCasesInSwitch,
+        'noFallthroughCasesInSwitch prevents silent fallthrough bugs in switch statements',
+      ).toBe(true);
+    });
+
+    it('should have exactOptionalPropertyTypes enabled in tsconfig.json', () => {
+      expect(
+        tsconfig.compilerOptions.exactOptionalPropertyTypes,
+        'exactOptionalPropertyTypes prevents implicitly assigning undefined to optional properties',
+      ).toBe(true);
+    });
+
+    it('should have noPropertyAccessFromIndexSignature enabled in tsconfig.json', () => {
+      expect(
+        tsconfig.compilerOptions.noPropertyAccessFromIndexSignature,
+        'noPropertyAccessFromIndexSignature prevents dot-access on index signature types',
+      ).toBe(true);
     });
   });
 
@@ -1752,6 +1812,44 @@ describe('Integrity Suite', () => {
         });
       });
     });
+
+    it('should not have commented-out code blocks in src/', () => {
+      const srcDir = path.join(rootDir, 'src') + path.sep;
+      const commentedCodePattern =
+        /\/\/\s*(?:const|let|var|function\s+\w|return\s+[\w(]|import\s+[{*\w])/;
+      codeFiles
+        .filter((f) => f.startsWith(srcDir))
+        .forEach((file) => {
+          const lines = fs.readFileSync(file, 'utf8').split('\n');
+          const hits = lines.filter((l) => commentedCodePattern.test(l));
+          expect(
+            hits.length,
+            `Commented-out code in ${file}: ${hits.slice(0, 2).join(' | ')}`,
+          ).toBe(0);
+        });
+    });
+
+    it('should have node: imports before relative imports in src/ files', () => {
+      const srcDir = path.join(rootDir, 'src') + path.sep;
+      codeFiles
+        .filter((f) => f.startsWith(srcDir))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          const importLines = content.match(/^import\s.+$/gm) ?? [];
+          const lastNodeIdx = importLines.reduce(
+            (acc: number, l: string, i: number) => (l.includes("from 'node:") ? i : acc),
+            -1,
+          );
+          const firstRelativeIdx = importLines.findIndex((l: string) =>
+            /from\s+['"]\.[.'"]/.test(l),
+          );
+          if (lastNodeIdx === -1 || firstRelativeIdx === -1) return;
+          expect(
+            lastNodeIdx,
+            `node: imports must precede relative imports in ${file}`,
+          ).toBeLessThan(firstRelativeIdx);
+        });
+    });
   });
 
   describe('Level 5: Architecture & Security @security', () => {
@@ -1990,6 +2088,47 @@ describe('Integrity Suite', () => {
         ).not.toMatch(hexSecretPattern);
       });
     });
+
+    it('should not use eval() or dynamic new Function() in src/', () => {
+      const srcDir = path.join(rootDir, 'src') + path.sep;
+      codeFiles
+        .filter((f) => f.startsWith(srcDir))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          expect(content, `eval() in ${file}: arbitrary code execution risk`).not.toMatch(
+            /\beval\s*\(/,
+          );
+          expect(
+            content,
+            `new Function() in ${file}: bypasses static analysis and strict mode`,
+          ).not.toMatch(/\bnew\s+Function\s*\(/);
+        });
+    });
+
+    it('should not use dangerouslySetInnerHTML in JSX/TSX files', () => {
+      codeFiles
+        .filter((f) => /\.(tsx|jsx)$/.test(f))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          expect(
+            content,
+            `dangerouslySetInnerHTML in ${file}: XSS risk, use a DOM sanitizer`,
+          ).not.toMatch(/dangerouslySetInnerHTML/);
+        });
+    });
+
+    it('should not throw string literals in src/', () => {
+      const srcDir = path.join(rootDir, 'src') + path.sep;
+      codeFiles
+        .filter((f) => f.startsWith(srcDir))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          expect(
+            content,
+            `String throw in ${file}: use "throw new Error(...)" for typed, catchable errors`,
+          ).not.toMatch(/\bthrow\s+['"]/);
+        });
+    });
   });
 
   describe('Level 6: Testing & Coverage @testing', () => {
@@ -2132,6 +2271,41 @@ describe('Integrity Suite', () => {
         ).toBe(testNames.length);
       });
     });
+
+    it('should not contain .only or .skip test modifiers in any test file', () => {
+      const testFiles = allSourceFiles.filter(
+        (f) => f.startsWith(testsDir) && /\.(test|spec)\.(ts|tsx)$/.test(f),
+      );
+      testFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        expect(content, `.only in ${file}: isolates tests, silently hiding all others`).not.toMatch(
+          /\b(?:it|test|describe)\.only\s*\(/,
+        );
+        expect(content, `.skip in ${file}: disables tests without removing them`).not.toMatch(
+          /\b(?:it|test|describe)\.skip\s*\(/,
+        );
+      });
+    });
+
+    it('should have a minimum of 4 assertions per unit test file', () => {
+      const unitDir = path.join(rootDir, 'tests', 'unit') + path.sep;
+      allSourceFiles
+        .filter((f) => f.startsWith(unitDir) && /\.(test|spec)\.(ts|tsx)$/.test(f))
+        .forEach((file) => {
+          const count = (fs.readFileSync(file, 'utf8').match(/\bexpect\s*\(/g) ?? []).length;
+          expect(
+            count,
+            `Unit test ${path.relative(rootDir, file)} has only ${count} assertion(s): add more to build confidence`,
+          ).toBeGreaterThanOrEqual(4);
+        });
+    });
+
+    it('should not configure passWithNoTests: true in vitest.config.ts', () => {
+      const vitestContent = fs.readFileSync(path.join(rootDir, 'vitest.config.ts'), 'utf8');
+      expect(vitestContent, 'passWithNoTests: true bypasses empty test runs silently').not.toMatch(
+        /passWithNoTests\s*:\s*true/,
+      );
+    });
   });
 
   describe('Level 7: Dependency Hygiene @dependencies', () => {
@@ -2182,6 +2356,29 @@ describe('Integrity Suite', () => {
           major,
           `Dependency "${name}@${version}" is at major version 0: API may be unstable`,
         ).toBeGreaterThan(0);
+      });
+    });
+
+    it('should declare a Node.js engine requirement in package.json', () => {
+      expect(pkg.engines, 'engines field is missing in package.json').toBeDefined();
+      expect(
+        pkg.engines?.node,
+        'engines.node is missing: specify minimum Node.js version',
+      ).toBeDefined();
+      expect(String(pkg.engines?.node)).toMatch(/^[>=<^~\d]/);
+    });
+
+    it('should not have git:// or file: dependencies in package.json', () => {
+      const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+      Object.entries(allDeps).forEach(([name, version]) => {
+        expect(
+          version as string,
+          `${name} uses a git dependency: only registry packages are allowed`,
+        ).not.toMatch(/^git(\+|:)/i);
+        expect(version as string, `${name} uses a local file dependency`).not.toMatch(/^file:/);
+        expect(version as string, `${name} uses a GitHub shorthand`).not.toMatch(
+          /^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+/,
+        );
       });
     });
   });
@@ -2273,8 +2470,8 @@ describe('Integrity Suite', () => {
     it('should use strict equality (===) instead of loose equality (==) in src/', () => {
       codeFiles.forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
-        // Allow != and == only if they're !== and === by ensuring no lonely == or !=
-        expect(content, `Loose equality (==) in ${file}`).not.toMatch(/(?<!=)={2}(?!=)/);
+        // Exclude !== by requiring the char before == is not !, =, <, or >
+        expect(content, `Loose equality (==) in ${file}`).not.toMatch(/(?<![!=<>])={2}(?!=)/);
         expect(content, `Loose inequality (!=) in ${file}`).not.toMatch(/!={1}(?!=)/);
       });
     });
@@ -2396,6 +2593,57 @@ describe('Integrity Suite', () => {
           ).not.toMatch(/^\s+Promise\.(all|race|allSettled|any)\s*\(/m);
         });
     });
+
+    it('should not use var declarations in src/', () => {
+      const srcDir = path.join(rootDir, 'src') + path.sep;
+      codeFiles
+        .filter((f) => f.startsWith(srcDir))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          expect(content, `var declaration in ${file}: use const or let instead`).not.toMatch(
+            /\bvar\s+\w/,
+          );
+        });
+    });
+
+    it('should not use default exports in src/', () => {
+      const srcDir = path.join(rootDir, 'src') + path.sep;
+      codeFiles
+        .filter((f) => f.startsWith(srcDir))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          expect(
+            content,
+            `Default export in ${file}: use named exports for safer refactoring and explicit imports`,
+          ).not.toMatch(/^export\s+default\s/m);
+        });
+    });
+
+    it('should not have nested ternary expressions in src/', () => {
+      const srcDir = path.join(rootDir, 'src') + path.sep;
+      codeFiles
+        .filter((f) => f.startsWith(srcDir))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          expect(
+            content,
+            `Nested ternary in ${file}: extract to if/else or a helper function for readability`,
+          ).not.toMatch(/\?[^:?\n]{0,100}\?[^:?\n]{0,100}:/);
+        });
+    });
+
+    it('should have a default clause in all switch statements in src/', () => {
+      const srcDir = path.join(rootDir, 'src') + path.sep;
+      codeFiles
+        .filter((f) => f.startsWith(srcDir))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          const switchBlocks = content.match(/\bswitch\s*\([^)]*\)\s*\{[\s\S]*?\n\s*\}/gm) ?? [];
+          switchBlocks.forEach((block) => {
+            expect(block, `switch without default clause in ${file}`).toMatch(/\bdefault\s*:/);
+          });
+        });
+    });
   });
 
   describe('Level 10: Runtime Performance & Efficiency @performance', () => {
@@ -2463,6 +2711,82 @@ describe('Integrity Suite', () => {
           ).not.toMatch(
             /async\s+(?:function\s+\w+|\(\s*[^)]*\)\s*=>)[\s\S]{0,500}?fs\.\w+Sync\s*\(/,
           );
+        });
+    });
+  });
+
+  describe('Level 11: Documentation Quality @documentation', () => {
+    it('should not have placeholder or empty descriptions in test files', () => {
+      const testFiles = allSourceFiles.filter(
+        (f) => f.startsWith(testsDir) && /\.(test|spec)\.(ts|tsx)$/.test(f),
+      );
+      testFiles.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        expect(
+          content,
+          `Placeholder description in ${file}: replace T` +
+            'ODO/F' +
+            `IXME/placeholder with a real description`,
+        ).not.toMatch(
+          new RegExp(
+            '\\bit\\s*\\(\\s*[\'"`](?:T' +
+              'ODO|F' +
+              'IXME|placeholder|test\\s+\\d*|untitled)[`\'"]',
+            'i',
+          ),
+        );
+      });
+    });
+
+    it('should have JSDoc comments on all exported members in src/', () => {
+      const srcDir = path.join(rootDir, 'src') + path.sep;
+      codeFiles
+        .filter((f) => f.startsWith(srcDir))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          const exportLines = [
+            ...content.matchAll(/^export\s+(?:const|function|class|type|interface|enum)\s+/gm),
+          ];
+          exportLines.forEach((match) => {
+            const pos = match.index ?? 0;
+            const preceding = content.slice(Math.max(0, pos - 300), pos);
+            expect(
+              preceding,
+              `Export at position ${pos} in ${file} is missing a JSDoc comment`,
+            ).toMatch(/\*\/\s*$/);
+          });
+        });
+    });
+
+    it('should include @param tags for all function exports with parameters in src/', () => {
+      const srcDir = path.join(rootDir, 'src') + path.sep;
+      codeFiles
+        .filter((f) => f.startsWith(srcDir))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          const funcExports = [
+            ...content.matchAll(/\/\*\*([\s\S]*?)\*\/\s*export\s+const\s+\w+\s*=\s*\([^)]+\)/gm),
+          ];
+          funcExports.forEach((match) => {
+            const jsdoc = match[1] ?? '';
+            expect(
+              jsdoc,
+              `Function export in ${file} has parameters but is missing @param tags in its JSDoc`,
+            ).toMatch(/@param/);
+          });
+        });
+    });
+
+    it('should not have empty JSDoc comments in src/', () => {
+      const srcDir = path.join(rootDir, 'src') + path.sep;
+      codeFiles
+        .filter((f) => f.startsWith(srcDir))
+        .forEach((file) => {
+          const content = fs.readFileSync(file, 'utf8');
+          expect(
+            content,
+            `Empty JSDoc block in ${file}: add a meaningful description or remove the comment`,
+          ).not.toMatch(/\/\*\*\s*\*\//);
         });
     });
   });

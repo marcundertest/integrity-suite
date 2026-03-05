@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.55] - 2026-03-06
+
+### Added
+
+- Level 11: Documentation Quality meta-tests (`@documentation`): no placeholder test descriptions,
+  JSDoc on all src exports, `@param` tags on function exports, no empty JSDoc blocks.
+- `@base`: `.nvmrc` / `.node-version` file existence check.
+- `@workflow`: `|| true` / `; true` bypass pattern detection in `validate-project`; pre-push hook
+  existence and content validation; `INTEGRITY_SKIP_PROTECTION` absent from scripts and hooks.
+- `@typescript`: `noFallthroughCasesInSwitch`, `exactOptionalPropertyTypes`,
+  `noPropertyAccessFromIndexSignature` compiler option checks.
+- `@hygiene`: Commented-out code detection in `src/`; `node:` imports before relative imports.
+- `@security`: `eval()` / `new Function()` prohibition; `dangerouslySetInnerHTML` prohibition;
+  string-throw prohibition (must use `throw new Error(...)`).
+- `@testing`: `.only` / `.skip` modifier prohibition; minimum 4 assertions per unit test file;
+  `passWithNoTests: true` prohibition in `vitest.config.ts`.
+- `@dependencies`: `engines.node` declaration check; git/file/GitHub-shorthand dependency ban.
+- `@consistency`: `var` declaration ban; default export ban in `src/`; nested ternary prohibition;
+  switch-without-default detection.
+- `pnpm test:meta:documentation` script for granular execution of Level 11.
+- JSDoc comments on all exports in `src/index.ts`.
+- `.nvmrc` pinned to `v22.18.0`.
+- `.husky/pre-push` hook running `pnpm validate-project`.
+- `engines.node: ">=22.0.0"` field in `package.json`.
+- `noFallthroughCasesInSwitch`, `exactOptionalPropertyTypes`, `noPropertyAccessFromIndexSignature`
+  to `tsconfig.json`.
+
+### Fixed
+
+- `@consistency`: `===` double-equals regex false-positive on `!==` (lookbehind now excludes `!`).
+- `@typescript`: Removed redundant `:\s*any` regex (already enforced by ESLint `no-explicit-any`).
+- `@workflow`: `INTEGRITY_SKIP_PROTECTION` environment variable bypass is no longer allowed inside
+  any `package.json` script or `.husky/pre-commit` hook.
+
 ## [1.4.54] - 2026-03-05
 
 ### Added

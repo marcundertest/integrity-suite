@@ -63,6 +63,27 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 138
+
+- **Fecha**: 2026-03-05 19:00
+- **Requerimiento**: Corrige los 6 fallos identificados en el analisis (===, any, skip/only no cubiertos, eval no prohibido, engines.node, core-protection eludible) e implementa 20 nuevos meta-tests: A (.skip/.only), B (min assertions), C (passWithNoTests), D (eval/new Function), E (dangerouslySetInnerHTML), F (string throws), G (noFallthroughCasesInSwitch), H (exactOptionalPropertyTypes), I (noPropertyAccessFromIndexSignature), J (no var), K (no default exports), L (no nested ternary), M (switch default), N (no || true en validate-project), O (pre-push hook), P (engines.node), Q (.nvmrc), R (no commented-out code), S (import order), T (no git/file deps), Level 11 @documentation (JSDoc exports, @param, descripcion package, no placeholder).
+- **Información adicional**: N/A
+- **Interpretación**: Correcciones de tests existentes: fix regex === (falso positivo con !==), eliminar deteccion de any redundante con ESLint, proteger core-protection contra INTEGRITY_SKIP_PROTECTION en scripts/hooks. Nuevos tests en niveles 0-10 y nuevo Level 11 @documentation. Cambios de infraestructura: agregar opciones estrictas a tsconfig.json, engines.node a package.json, crear .nvmrc y .husky/pre-push, JSDoc en src/index.ts.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `tsconfig.json` (estado: modificado)
+  - `package.json` (estado: modificado)
+  - `src/index.ts` (estado: modificado)
+  - `.nvmrc` (estado: creado)
+  - `.husky/pre-push` (estado: creado)
+  - `.integrity-suite/integrity-suite.sha256` (estado: modificado)
+  - `CHANGELOG.md` (estado: modificado)
+- **Tests**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+- **Estado**: Completado
+- **Resultados de los tests**: 192 tests passed (187 meta + 4 unit + 1 e2e), 0 failed. validate-project OK en v1.4.55.
+
 ### Requerimiento 137
 
 - **Fecha**: 2026-03-05 18:20
