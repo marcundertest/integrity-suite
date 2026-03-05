@@ -63,6 +63,35 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 053
+
+- **Fecha**: 2026-03-05 10:45
+- **Requerimiento**: Refinar la suite de integridad: mejorar detección de secretos, validación robusta de fechas y changelog, y asegurar tests con output detallado.
+- **Información adicional**: Se han corregido las debilidades en la detección de secretos (JWT, etc.), la fragilidad de la regex de cobertura y los falsos positivos en tests cross-platform.
+- **Interpretación**:
+  1. Mejora en la detección de secretos: regex mejorada para detectar secretos en fallbacks de variables de entorno y formato JWT.
+  2. Validación robusta de `requirements.md`: se añade chequeo de fechas válidas y se asegura que exista al menos un requerimiento aprobado.
+  3. Verificación de `CHANGELOG.md`: mejora del script para comprobar que la versión actual tiene una entrada documentada.
+  4. Configuración de tests: agregado `--reporter=verbose` a todos los scripts de test para facilitar el diagnóstico.
+  5. Sincronización de `pnpm`: test para verificar que la versión de pnpm en el sistema coincide con `packageManager`.
+  6. Refinamiento en el script `audit`: se añade la flag `--prod` para centrarse en dependencias de producción.
+  7. Actualización de `prompt.md`: se ha añadido una sección sobre el ciclo de vida de los archivos "bootstrap" para guiar al agente en su reemplazo por funcionalidad real.
+  8. Test de higiene de archivos "bootstrap": se ha añadido un meta-test que bloquea el commit si el archivo `dummy.spec.ts` sigue existiendo (e intacto) cuando ya se han añadido otros módulos de código real en `src/`.
+  9. Blindaje de meta-test de cobertura: mejora en la detección de tests "reales" verificando que realicen imports del módulo y contengan al menos 2 aserciones `expect(`.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `tests/meta/integrity-suite.test.ts` (estado: modificado)
+  - `.integrity-suite/scripts/check-changelog.js` (estado: modificado)
+  - `package.json` (estado: modificado)
+  - `src/index.ts` (estado: modificado)
+  - `tests/unit/index.test.ts` (estado: creado)
+- **Tests**:
+  - `pnpm validate-project` (estado: ejecutado)
+- **Estado**: Aprobado
+- **Resultados de los tests**:
+  - **Iteración 01**: 2026-03-05 10:45 - ✅ Complete integrity suite refinement with 72 tests (version 1.4.19)
+  - **Iteración 02**: 2026-03-05 10:59 - ✅ Enhanced test validation for source modules (72 tests)
+
 ### Requerimiento 052
 
 - **Fecha**: 2026-03-05 03:12

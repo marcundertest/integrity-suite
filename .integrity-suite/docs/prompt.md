@@ -22,6 +22,13 @@ Este proyecto utiliza una **Integrity Suite** estricta para garantizar los más 
 - **Documenta los cambios**: Eres responsable de mantener `CHANGELOG.md`, siguiendo el formato establecido en el archivo.
 - **Idioma del agente**: Responde siempre en castellano. Sin embargo, advierte que **todo el código fuente (comentarios, variables, funciones)** DEBE estar estrictamente en inglés (sólo caracteres ASCII), de lo contrario la _Integrity Suite_ bloqueará el commit (Level 4: Hygiene).
 
+## Archivos base y ciclo de vida
+
+El estado inicial del repositorio contiene archivos "bootstrap" como `src/index.ts`, `tests/unit/index.test.ts` y `tests/e2e/dummy.spec.ts`. Estos archivos existen únicamente para verificar que la configuración del entorno y la Integrity Suite (cobertura 100%, validación de módulos, etc.) son correctas desde el primer momento.
+
+- **Reemplazo progresivo**: Cuando comiences a implementar la lógica real del proyecto, DEBES reemplazar estos archivos por los módulos y tests correspondientes a la funcionalidad solicitada.
+- **Mantén la integridad**: Asegúrate de que los nuevos archivos sigan cumpliendo con todas las reglas de la Integrity Suite (naming de tests, cobertura, idioma, etc.).
+
 Este proyecto podría ya estar en desarrollo. Si tiene otros tests existentes en `tests/`, ejecútalos todos y reporta los resultados: cuántos pasan, cuántos fallan y el detalle de los errores.
 
 Cuando tengas una visión clara del estado del proyecto y de las reglas estrictas anteriores, indica que estás listo para recibir requerimientos.

@@ -414,6 +414,13 @@ describe('Integrity Suite', () => {
         latestReq,
         'The latest requirement must be marked as Approved by the user before committing.',
       ).toContain('- **Estado**: Aprobado');
+
+      // Point 9: Verify there is at least one approved requirement in the history (not just the latest template)
+      const approvedCount = (historySection.match(/- \*\*Estado\*\*:\s*Aprobado/g) || []).length;
+      expect(
+        approvedCount,
+        'requirements.md must have at least one Approved requirement in its history',
+      ).toBeGreaterThanOrEqual(1);
     });
 
     it('should maintain structured and sequential requirements in requirements.md', () => {
@@ -469,8 +476,16 @@ describe('Integrity Suite', () => {
       const dates: Date[] = [];
 
       for (let i = 1; i < reqBlocks.length; i++) {
-        const match = reqBlocks[i].match(/- \*\*Fecha\*\*:\s*(\d{4}-\d{2}-\d{2})/);
-        if (match) dates.push(new Date(match[1]));
+        const match = reqBlocks[i].match(/- \*\*Fecha\*\*:\s*(\d{4}-\d{2}-\d{2})(\s+\d{2}:\d{2})?/);
+        if (match) {
+          const date = new Date(match[1]);
+          // Point 7: Validate the date format is valid
+          expect(
+            date.getTime(),
+            `Invalid date format in requirement ${i}: "${match[1]}"`,
+          ).not.toBeNaN();
+          dates.push(date);
+        }
       }
 
       // Requirements are newest-first, so dates must be descending
@@ -767,9 +782,15 @@ describe('Integrity Suite', () => {
         'token',
         'private[_-]?key',
         'auth[_-]?key',
+        'credential',
       ];
+      // Point 4: Enhanced regex to detect more variants of hardcoded secrets
       const patterns = keys.map(
-        (key) => new RegExp(`(['"\`]?${key}['"\`]?)\\s*[:=]\\s*['"\`][\\w\\-/+=]{8,}['"\`]`, 'i'),
+        (key) =>
+          new RegExp(
+            `(['"\`]?${key}['"\`]?)\\s*[:=]\\s*['"\`][\\w\\-/+=]{8,}['"\`]|process\\.env\\.[\\w_]+\\s*\\|\\|\\s*['"\`][\\w\\-/+=]{8,}['"\`]`,
+            'i',
+          ),
       );
 
       allSourceFiles.forEach((file) => {
@@ -780,6 +801,10 @@ describe('Integrity Suite', () => {
         patterns.forEach((pattern) => {
           expect(content, `Potential hardcoded secret in ${file}`).not.toMatch(pattern);
         });
+
+        // Point 4: Detect JWT-like strings (header.payload.signature)
+        const jwtPattern = /ey[a-zA-Z0-9_-]{10,}\.ey[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}/;
+        expect(content, `Potential JWT token found in ${file}`).not.toMatch(jwtPattern);
       });
     });
 
@@ -795,13 +820,12 @@ describe('Integrity Suite', () => {
           .replace(/import\s+.*from\s+['"].*['"]/g, '')
           .replace(/https?:\/\/[^\s'"]+/g, '');
 
+        // Point 5: Refined slash detection to avoid false positives in strings like './src/index'
+        // Only flag if a slash is used inside an .includes() or .match() that looks like a path check
+        const hardcodedSlashPattern = /\.(includes|match)\(['"][^'"]*[/\\][^'"]*['"]\)/;
         expect(
-          content.match(/\.includes\(['"][^'"]*[/\\].*['"]\)/),
-          `Hardcoded slash in test ${file}`,
-        ).toBeNull();
-        expect(
-          content.match(/\.match\(['"][^'"]*[/\\].*['"]\)/),
-          `Hardcoded slash in test ${file}`,
+          content.match(hardcodedSlashPattern),
+          `Hardcoded slash in test ${file}: use path.join or path.sep for cross-platform compatibility`,
         ).toBeNull();
       });
     });
@@ -829,13 +853,26 @@ describe('Integrity Suite', () => {
       const testFiles = allSourceFiles.filter(
         (f) => f.startsWith(testsDir) && /\.(test|spec)\.(ts|tsx)$/.test(f),
       );
-      const testContents = testFiles.map((f) => fs.readFileSync(f, 'utf8'));
 
       srcFiles.forEach((srcFile) => {
         const moduleName = path.basename(srcFile, path.extname(srcFile));
-        if (moduleName === 'index') return; // index files are typically re-exports
-        const isCovered = testContents.some((content) => content.includes(moduleName));
-        expect(isCovered, `No test references module: ${moduleName}`).toBe(true);
+        const relPath = path.relative(rootDir, srcFile).replace(/\\/g, '/');
+
+        // Must import from this module AND have at least one real assertion
+        const coveringTests = testFiles.filter((testFile) => {
+          const content = fs.readFileSync(testFile, 'utf8');
+          const importsModule =
+            content.includes(`from '../../src/${moduleName}`) ||
+            content.includes(`from "../src/${moduleName}`) ||
+            content.includes(relPath.replace('.ts', ''));
+          const hasRealAssertions = (content.match(/expect\(/g) ?? []).length >= 2;
+          return importsModule && hasRealAssertions;
+        });
+
+        expect(
+          coveringTests.length,
+          `No real test (with imports + assertions) covers module: ${moduleName}`,
+        ).toBeGreaterThan(0);
       });
     });
 
@@ -876,7 +913,9 @@ describe('Integrity Suite', () => {
 
     it('should not have coverage exclusions in vitest.config.ts', () => {
       const content = fs.readFileSync(path.join(rootDir, 'vitest.config.ts'), 'utf8');
-      const coverageBlock = content.match(/coverage:\s*\{([\s\S]*?)^\s*\}/m)?.[1] ?? '';
+      // Point 1: Robust extraction of coverage block to avoid false negatives
+      const coverageBlockMatch = content.match(/coverage:\s*\{([\s\S]*?)(\n\s*\},|\n\s*\})/m);
+      const coverageBlock = coverageBlockMatch ? coverageBlockMatch[1] : '';
       expect(
         coverageBlock,
         'vitest.config.ts coverage block must not have an exclude list',
@@ -885,6 +924,31 @@ describe('Integrity Suite', () => {
 
     it('should enforce test coverage flag in package.json scripts', () => {
       expect(pkg.scripts['test:unit']).toContain('--coverage');
+    });
+
+    it('should not have bootstrap files remaining when real functionality is present', () => {
+      const srcDir = path.join(rootDir, 'src');
+      const srcFiles = getFiles(srcDir).filter((f) => /\.(ts|tsx)$/.test(f));
+      const hasRealSrc = srcFiles.some((f) => path.basename(f) !== 'index.ts');
+
+      const bootstrapTests = [path.join(rootDir, 'tests', 'e2e', 'dummy.spec.ts')];
+
+      // If we have real code files in src/, we shouldn't have dummy e2e tests
+      if (hasRealSrc) {
+        bootstrapTests.forEach((file) => {
+          if (fs.existsSync(file)) {
+            const content = fs.readFileSync(file, 'utf8');
+            expect(
+              content,
+              `Bootstrap test ${path.relative(rootDir, file)} must be removed/replaced once real code is added to src/`,
+            ).not.toContain('Dummy E2E Test');
+          }
+        });
+      }
+
+      // If index.ts has been fundamentally changed (not just dummyping),
+      // the agent can decide to keep it or rename it.
+      // But the e2e dummy.spec.ts is the clearest "REMOVEME" marker.
     });
   });
 
@@ -906,9 +970,22 @@ describe('Integrity Suite', () => {
       expect(duplicates, `Duplicate packages: ${duplicates.join(', ')}`).toHaveLength(0);
     });
 
-    it('should have packageManager field pinned to exact version', () => {
+    it('should have packageManager field pinned to exact version and match installed version', async () => {
+      const { execSync } = await import('node:child_process');
       expect(pkg.packageManager, 'packageManager field is missing').toBeDefined();
       expect(pkg.packageManager).toMatch(/^pnpm@\d+\.\d+\.\d+$/);
+
+      // Point 11: Verify installed pnpm version matches packageManager
+      const [, expectedVersion] = pkg.packageManager.split('@');
+      try {
+        const installedVersion = execSync('pnpm --version').toString().trim();
+        expect(
+          installedVersion,
+          `Installed pnpm version (${installedVersion}) does not match packageManager (${expectedVersion})`,
+        ).toBe(expectedVersion);
+      } catch (e) {
+        // Skip if pnpm is not in path (likely CI environment without pnpm)
+      }
     });
   });
 

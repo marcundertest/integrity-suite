@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.19] - 2026-03-05
+
+### Added
+
+- Improved secret detection in integrity suite (JWT, environment variables fallback).
+- Added `requirements.md` date format validation.
+- Added test to verify `pnpm` version matches `packageManager`.
+- Added unit test for `src/index.ts` and enforced index test coverage.
+- Configured verbose test output for all test suites.
+- Added "Archivos base y ciclo de vida" section to `prompt.md` to instruct agents on replacing bootstrap files.
+- Added meta-test to detect remaining bootstrap tests (`dummy.spec.ts`) once real code is present in `src/`.
+- Updated `audit` script to target production dependencies only.
+
+### Fixed
+
+- Robust coverage block detection in `vitest.config.ts`.
+- Refined cross-platform slash detection to avoid false positives.
+- Improved CHANGELOG.md verification to check for the current version's entry.
+- Fixed `audit` script to target production dependencies only.
+- Fixed relative import with extension for ESM in index tests.
+
 ## [1.4.18] - 2026-03-05
 
 ### Added

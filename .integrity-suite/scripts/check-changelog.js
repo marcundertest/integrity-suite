@@ -29,6 +29,14 @@ try {
     process.exit(1);
   }
 
+  const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
+  const versionPattern = new RegExp(`## \\[${pkg.version.replace(/\./g, '\\.')}\\]`, 'g');
+  if (!versionPattern.test(currentContent)) {
+    console.error(`Error: No entry found for current version [${pkg.version}] in CHANGELOG.md`);
+    console.error(`Please add a "## [${pkg.version}]" header to CHANGELOG.md`);
+    process.exit(1);
+  }
+
   console.log('CHANGELOG.md update check passed.');
 } catch (error) {
   console.error('Error during CHANGELOG verification:', error.message);
