@@ -1,4 +1,4 @@
 node_modules
 dist
 pnpm-lock.yaml
-.integrity-suite/tests/meta/reports/*.html
+.integrity-suite/tests/reports/*.html

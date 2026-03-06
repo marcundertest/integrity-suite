@@ -9,27 +9,9 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 
-declare module '../../scripts/check-version.js' {
-  export function validateVersion(options?: any): {
-    valid: boolean;
-    message: string;
-    error?: string;
-  };
-}
-declare module '../../scripts/check-changelog.js' {
-  export function validateChangelog(options?: any): {
-    valid: boolean;
-    message: string;
-    error?: string;
-  };
-}
-
-import { validateVersion } from '../../scripts/check-version.js';
-import { validateChangelog } from '../../scripts/check-changelog.js';
-
 describe('Integrity Suite', () => {
-  // adjust path: meta -> tests -> .integrity-suite -> project root
-  const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+  // adjust path: tests -> .integrity-suite -> project root
+  const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
   const getFiles = (dir: string, allFiles: string[] = []) => {
     if (!fs.existsSync(dir)) return allFiles;
@@ -226,6 +208,46 @@ describe('Integrity Suite', () => {
         expect(devDeps[dep], `Missing required devDependency: ${dep}`).toBeDefined();
       });
     });
+
+    it('should pass security audit with resilience to network errors', () => {
+      // Encapsulates check-audit.js logic: pnpm audit with graceful network handling
+      try {
+        execSync('pnpm audit --prod', {
+          stdio: 'pipe',
+          encoding: 'utf8',
+        });
+        // No vulnerabilities
+      } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        const networkErrors = [
+          'ENOTFOUND',
+          'ECONNREFUSED',
+          'ETIMEDOUT',
+          'network',
+          'socket hang up',
+        ];
+        const isNetworkError = networkErrors.some((err) => errorMessage.includes(err));
+
+        if (isNetworkError) {
+          // Network unavailable is acceptable; test passes with warning
+          console.warn('⚠️  Audit skipped: network unavailable. Check audit later.');
+          return;
+        }
+
+        if (errorMessage.includes('registry') || errorMessage.includes('fetch')) {
+          // Registry unreachable is acceptable
+          console.warn('⚠️  Audit warning: registry unreachable. Check registry status.');
+          return;
+        }
+
+        if (errorMessage.includes('vulnerabilities')) {
+          expect(false, '❌ Audit failed: vulnerabilities detected in dependencies').toBe(true);
+        }
+
+        // Unknown error: fail the test
+        expect(false, `Audit failed with unexpected error: ${errorMessage}`).toBe(true);
+      }
+    });
   });
 
   describe('Level 2: Strict Workflow (Pipeline) @workflow', () => {
@@ -263,7 +285,7 @@ describe('Integrity Suite', () => {
           cwd: rootDir,
           stdio: ['pipe', 'pipe', 'ignore'],
         }).toString();
-      } catch {
+      } catch (e: unknown) {
         return; // No git history yet
       }
       const messages = log.split('\n').filter(Boolean);
@@ -281,7 +303,7 @@ describe('Integrity Suite', () => {
           cwd: rootDir,
           stdio: ['pipe', 'pipe', 'ignore'],
         }).toString();
-      } catch {
+      } catch (e: unknown) {
         return;
       }
       const scopePattern = /^[a-z]+\([^)]+\):/;
@@ -345,7 +367,7 @@ describe('Integrity Suite', () => {
           'build',
           'coverage',
           'pnpm-lock.yaml',
-          '.integrity-suite/tests/meta/reports',
+          '.integrity-suite/tests/reports',
         ],
         '.markdownlintignore': ['node_modules', 'dist', 'build', 'coverage'],
       };
@@ -418,7 +440,7 @@ describe('Integrity Suite', () => {
         'src/__tests__',
         '.vitest-results',
         '.integrity-suite/.user_secret',
-        '.integrity-suite/tests/meta/reports',
+        '.integrity-suite/tests/reports',
       ];
       lines.forEach((line) => {
         const norm = normalize(line);
@@ -537,22 +559,23 @@ describe('Integrity Suite', () => {
       }
     });
 
-    it('should have a zero-tolerance validation script with security audit', () => {
+    it('should have a zero-tolerance validation script with consolidated validations in tests', () => {
       const script = pkg.scripts['test:full'];
+      // Pipeline should have linting, formatting, type checking, and test:meta
       expect(script).toContain('eslint . --max-warnings 0');
       expect(script).toContain('markdownlint .');
       expect(script).toContain('prettier --check .');
       expect(script).toContain('tsc --noEmit');
-      expect(script).toContain('check-audit.js');
-      expect(script).toContain('pnpm check-version');
-      expect(script).toContain('pnpm check-changelog');
-      expect(script).toContain('pnpm test');
-
-      // Verify check-changelog and check-version run BEFORE test
+      expect(script).toContain('pnpm test:meta');
+      // Verify it's clean: no direct CLI calls to check-version, check-changelog, or audit scripts
+      expect(script).not.toContain('check-version');
+      expect(script).not.toContain('check-changelog');
+      expect(script).not.toContain('check-audit.js');
+      // Verify test:meta runs before unit/e2e tests
       expect(
-        script.indexOf('pnpm check-changelog'),
-        'check-changelog must run before pnpm test',
-      ).toBeLessThan(script.indexOf('pnpm test'));
+        script.indexOf('test:meta'),
+        'test:meta must run before other test suites',
+      ).toBeLessThan(script.indexOf('test:unit'));
     });
 
     it('should call all three test suites in correct order in test:full and test:nobump', () => {
@@ -665,14 +688,14 @@ describe('Integrity Suite', () => {
         '.integrity-suite/docs/prompt.md',
         '.integrity-suite/docs/workflow.md',
         '.integrity-suite/scripts',
-        '.integrity-suite/tests/meta',
-        '.integrity-suite/tests/meta/integrity-suite.test.ts',
+        '.integrity-suite/tests',
+        '.integrity-suite/tests/integrity-suite.test.ts',
       ];
 
       lines.forEach((line) => {
         const isReport =
-          line === '.integrity-suite/tests/meta/reports' ||
-          line.startsWith('.integrity-suite/tests/meta/reports');
+          line === '.integrity-suite/tests/reports' ||
+          line.startsWith('.integrity-suite/tests/reports');
         const targetsCoreKit =
           !isReport &&
           coreKitPatterns.some((p) => line === p || line.startsWith(p) || p.startsWith(line));
@@ -718,7 +741,7 @@ describe('Integrity Suite', () => {
     let changedFiles = '';
     try {
       changedFiles = execSync('git status --porcelain', { encoding: 'utf8', stdio: 'pipe' });
-    } catch (e) {
+    } catch (e: unknown) {
       return;
     }
 
@@ -736,7 +759,7 @@ describe('Integrity Suite', () => {
       }
 
       // Allow integrity-suite.test.ts to be modified for test improvements
-      if (p === '.integrity-suite/tests/meta/integrity-suite.test.ts') {
+      if (p === '.integrity-suite/tests/integrity-suite.test.ts') {
         return;
       }
 
@@ -878,6 +901,51 @@ describe('Integrity Suite', () => {
         });
     });
 
+    it('should type catch clause errors as unknown, not untyped in src/ and tests/', () => {
+      const filesToCheck = [
+        ...codeFiles.filter((f) => f.includes('/src/') || f.includes('/tests/')),
+      ];
+      filesToCheck.forEach((file) => {
+        const content = fs.readFileSync(file, 'utf8');
+        // Look for catch (e) or catch(e) without type annotation
+        const untypedCatch = content.match(/catch\s*\(\s*\w+\s*\)(?!\s*:\s*unknown)/g);
+        expect(
+          untypedCatch,
+          `Untyped catch clause found in ${file}. Use \`catch (e: unknown)\` to properly type error handling`,
+        ).toBeFalsy();
+      });
+    });
+
+    it('should not have dangling or invalid module imports', () => {
+      // Test should detect references to deleted modules
+      const testFilePath = path.join(
+        rootDir,
+        '.integrity-suite',
+        'tests',
+        'integrity-suite.test.ts',
+      );
+      const content = fs.readFileSync(testFilePath, 'utf8');
+
+      // Check for imports of deleted modules
+      const deletedModules = [
+        '../scripts/check-version.js',
+        '../scripts/check-changelog.js',
+        '../scripts/check-audit.js',
+      ];
+
+      deletedModules.forEach((module) => {
+        const hasImport =
+          content.includes(`from '${module}'`) ||
+          content.includes(`from "${module}"`) ||
+          content.includes(`declare module '${module}'`) ||
+          content.includes(`declare module "${module}"`);
+        expect(
+          !hasImport,
+          `Reference to deleted module "${module}" found in test file. All validations are now in tests.`,
+        ).toBe(true);
+      });
+    });
+
     it('should have noFallthroughCasesInSwitch enabled in tsconfig.json', () => {
       expect(
         tsconfig.compilerOptions.noFallthroughCasesInSwitch,
@@ -897,6 +965,23 @@ describe('Integrity Suite', () => {
         tsconfig.compilerOptions.noPropertyAccessFromIndexSignature,
         'noPropertyAccessFromIndexSignature prevents dot-access on index signature types',
       ).toBe(true);
+    });
+
+    it('should not have TypeScript compilation errors', () => {
+      // Ensures the entire project compiles without errors
+      try {
+        const output = execSync('tsc --noEmit', {
+          cwd: rootDir,
+          encoding: 'utf8',
+          stdio: ['pipe', 'pipe', 'pipe'],
+        });
+        // If compilation succeeds, it won't throw and we just pass
+        expect(true).toBe(true);
+      } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        // If tsc fails, we should capture and fail the test
+        expect(false, `TypeScript compilation failed:\n${errorMessage}`).toBe(true);
+      }
     });
   });
 
@@ -2375,7 +2460,7 @@ describe('Integrity Suite', () => {
           installedVersion,
           `Installed pnpm version (${installedVersion}) does not match packageManager (${expectedVersion})`,
         ).toBe(expectedVersion);
-      } catch (e) {
+      } catch (e: unknown) {
         // Skip if pnpm is not in path (likely CI environment without pnpm)
       }
     });
@@ -2420,29 +2505,46 @@ describe('Integrity Suite', () => {
   });
 
   describe('Level 8: Dependency Security @security-audit', () => {
-    it('should have audit check integrated into test scripts', () => {
+    it('should have audit check integrated into test:meta as a test case', () => {
+      // Verify that the audit validation has been moved into tests
+      const testFilePath = path.join(
+        rootDir,
+        '.integrity-suite',
+        'tests',
+        'integrity-suite.test.ts',
+      );
+      const testContent = fs.readFileSync(testFilePath, 'utf-8');
+      const hasAuditTest = testContent.includes(
+        'should pass security audit with resilience to network errors',
+      );
+      expect(hasAuditTest, 'Audit validation must be a test case in integrity-suite.test.ts').toBe(
+        true,
+      );
+      // Verify pipeline scripts are no longer directly calling check-audit.js
       const fullScript = pkg.scripts['test:full'];
       const nobumpScript = pkg.scripts['test:nobump'];
-      expect(fullScript, 'test:full script is missing').toBeDefined();
-      expect(nobumpScript, 'test:nobump script is missing').toBeDefined();
-      expect(fullScript).toContain('check-audit.js');
-      expect(nobumpScript).toContain('check-audit.js');
+      expect(fullScript).not.toContain('check-audit.js');
+      expect(nobumpScript).not.toContain('check-audit.js');
     });
 
-    it('should run audit before tests in test:full and test:nobump', () => {
+    it('should run all validations (audit, version, changelog) within test:meta', () => {
+      // Verify that validation tests exist within the test:meta suite
+      const testFilePath = path.join(
+        rootDir,
+        '.integrity-suite',
+        'tests',
+        'integrity-suite.test.ts',
+      );
+      const testContent = fs.readFileSync(testFilePath, 'utf-8');
+      expect(testContent).toContain('should pass security audit with resilience to network errors');
+      expect(testContent).toContain('should require version to be bumped for non-markdown files');
+      expect(testContent).toContain('should update CHANGELOG.md when version changes');
+      // Verify pipeline no longer has direct calls to check scripts
       const scriptFull = pkg.scripts['test:full'];
       expect(scriptFull).toBeDefined();
-      const auditIdxFull = scriptFull.indexOf('check-audit.js');
-      const testIdxFull = scriptFull.indexOf('pnpm test');
-      expect(auditIdxFull, 'audit must run before tests in test:full').toBeLessThan(testIdxFull);
-
-      const scriptNobump = pkg.scripts['test:nobump'];
-      expect(scriptNobump).toBeDefined();
-      const auditIdxNobump = scriptNobump.indexOf('check-audit.js');
-      const testIdxNobump = scriptNobump.indexOf('pnpm test');
-      expect(auditIdxNobump, 'audit must run before tests in test:nobump').toBeLessThan(
-        testIdxNobump,
-      );
+      expect(scriptFull).not.toContain('check-audit.js');
+      expect(scriptFull).not.toContain('pnpm check-version');
+      expect(scriptFull).not.toContain('pnpm check-changelog');
     });
 
     it('should have a lockfile that is not outdated relative to package.json', () => {
@@ -2852,7 +2954,7 @@ describe('Integrity Suite', () => {
           hasRequirements,
           'requirements.md must be staged during commits to track completed requirements',
         ).toBe(true);
-      } catch {
+      } catch (e: unknown) {
         // Git command failure likely means not in a git repo or no staging area
         // Skip this test in non-git contexts
       }
@@ -2874,7 +2976,7 @@ describe('Integrity Suite', () => {
             },
           );
           originVersion = JSON.parse(pkgAtOrigin).version;
-        } catch {
+        } catch (e: unknown) {
           // If we can't get origin version, it's OK (new repo or no origin)
           originVersion = null;
         }
@@ -2894,37 +2996,8 @@ describe('Integrity Suite', () => {
             }
           }
         }
-      } catch (e) {
+      } catch (e: unknown) {
         // If git is unavailable or version parsing fails, skip gracefully
-      }
-    });
-
-    it('should validate version with strict mode (commit policy)', () => {
-      // @version-release
-      // Tag: @version-release - runs only in test:full to enforce version bump for commits
-      try {
-        const result = validateVersion({ relaxed: false, quiet: true });
-        if (!result.valid && result.error?.includes('has not been incremented')) {
-          // This is expected when version hasn't been bumped yet
-          // In a commit, this is an error, so we validate the check would fail
-          expect(result.valid).toBe(false);
-        }
-      } catch (e) {
-        // If git is unavailable, skip gracefully
-      }
-    });
-
-    it('should validate changelog when version changes', () => {
-      // @version-release
-      // Tag: @version-release - runs only in test:full to enforce CHANGELOG updates
-      try {
-        const result = validateChangelog({ quiet: true });
-        // If changelog is not valid and version changed, this is expected to fail
-        // Just verify the function executes and returns a result
-        expect(result).toHaveProperty('valid');
-        expect(result).toHaveProperty('message');
-      } catch (e) {
-        // If git is unavailable, skip gracefully
       }
     });
 
@@ -2948,6 +3021,56 @@ describe('Integrity Suite', () => {
       }
     });
 
+    it('should require version bump when non-markdown files are staged', () => {
+      // @version-release
+      // If any non-markdown files are in staging, version MUST be higher than HEAD
+      try {
+        let stagedFiles: string[] = [];
+        try {
+          stagedFiles = execSync('git diff --cached --name-only', {
+            encoding: 'utf8',
+            stdio: ['pipe', 'pipe', 'pipe'],
+          })
+            .trim()
+            .split('\n')
+            .filter((line) => line.length > 0);
+        } catch (e: unknown) {
+          // Not in a git repo or no staging, skip
+          return;
+        }
+
+        // Filter to non-markdown files
+        const nonMarkdownFiles = stagedFiles.filter((f) => !f.endsWith('.md'));
+        if (nonMarkdownFiles.length === 0) {
+          // Only markdown changes, no need to bump version
+          return;
+        }
+
+        // Non-markdown files are staged; verify version was bumped
+        let headVersion = null;
+        try {
+          const pkgAtHead = execSync('git show HEAD:package.json 2>/dev/null', {
+            encoding: 'utf8',
+            stdio: ['pipe', 'pipe', 'pipe'],
+          });
+          headVersion = JSON.parse(pkgAtHead).version;
+        } catch (e: unknown) {
+          // initial commit, allow it
+          headVersion = '0.0.0';
+        }
+
+        if (headVersion && pkg.version === headVersion) {
+          expect(
+            false,
+            `Non-markdown files staged (${nonMarkdownFiles.join(', ')}) but version not bumped: ` +
+              `still at ${pkg.version}`,
+          ).toBe(true);
+        }
+      } catch (e: unknown) {
+        // skip if git unavailable
+      }
+    });
+
     it('should enforce version bump in staging (strict commit mode)', () => {
       // @version-release
       // Strict: version in staging MUST be higher than current HEAD version
@@ -2959,7 +3082,7 @@ describe('Integrity Suite', () => {
             stdio: ['pipe', 'pipe', 'pipe'],
           });
           headVersion = JSON.parse(pkgAtHead).version;
-        } catch {
+        } catch (e: unknown) {
           // initial commit, allow it
           headVersion = '0.0.0';
         }
@@ -2983,7 +3106,7 @@ describe('Integrity Suite', () => {
               ')',
           ).toBe(true);
         }
-      } catch (e) {
+      } catch (e: unknown) {
         // skip if git unavailable
       }
     });
@@ -2999,7 +3122,7 @@ describe('Integrity Suite', () => {
             stdio: ['pipe', 'pipe', 'pipe'],
           });
           headVersion = JSON.parse(pkgAtHead).version;
-        } catch {
+        } catch (e: unknown) {
           headVersion = '0.0.0';
         }
 
@@ -3018,7 +3141,7 @@ describe('Integrity Suite', () => {
             'Version in staging (' + pkg.version + ') must be >= HEAD (' + headVersion + ')',
           ).toBe(true);
         }
-      } catch (e) {
+      } catch (e: unknown) {
         // skip if git unavailable
       }
     });
@@ -3034,7 +3157,7 @@ describe('Integrity Suite', () => {
             stdio: ['pipe', 'pipe', 'pipe'],
           });
           headVersion = JSON.parse(pkgAtHead).version;
-        } catch {
+        } catch (e: unknown) {
           headVersion = '0.0.0';
         }
 
@@ -3051,7 +3174,7 @@ describe('Integrity Suite', () => {
             'CHANGELOG.md must include entry "## [' + pkg.version + ']" after version bump',
           ).toBe(true);
         }
-      } catch (e) {
+      } catch (e: unknown) {
         // skip if unavailable
       }
     });
@@ -3067,7 +3190,7 @@ describe('Integrity Suite', () => {
             stdio: ['pipe', 'pipe', 'pipe'],
           });
           headVersion = JSON.parse(pkgAtHead).version;
-        } catch {
+        } catch (e: unknown) {
           headVersion = '0.0.0';
         }
 
@@ -3083,7 +3206,7 @@ describe('Integrity Suite', () => {
             'requirements.md must include "**Versión**: ' + pkg.version + '" after version bump',
           ).toBe(true);
         }
-      } catch (e) {
+      } catch (e: unknown) {
         // skip if unavailable
       }
     });

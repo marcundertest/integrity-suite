@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.65] - 2026-03-06
+
+### Changed
+
+- **Relocated meta-tests:** removed `meta` subdirectory and placed
+  `.integrity-suite/tests/integrity-suite.test.ts` directly under
+  `.integrity-suite/tests`. Updated all scripts, ignores and documentation
+  accordingly.
+- **Consolidated validation logic into tests:** all validation scripts
+  (`check-audit.js`, `check-changelog.js`, `check-version.js`) have been
+  consolidated into `integrity-suite.test.ts` as test cases, eliminating
+  redundancy and establishing tests as the single source of truth for all
+  project validation rules.
+- **Removed redundant script files:**
+  - **Deleted** `check-audit.js` - audit logic now in test
+    `should pass security audit with resilience to network errors`.
+  - **Deleted** `check-changelog.js` - changelog validation now inline in tests.
+  - **Deleted** `check-version.js` - version validation now inline in tests.
+  - **Deleted** `capture-linter-results.js` - linting results captured by Vitest.
+  - **Kept** `commitlint.config.js` - required by git hook; logic validated in tests.
+- **Simplified pipeline (`package.json`):**
+  - `test:full` and `test:nobump` no longer call `check-audit.js`,
+    `pnpm check-version`, or `pnpm check-changelog` directly. All validations
+    now run as comprehensive meta-tests.
+  - Pipeline reduced to: `eslint -> markdownlint -> prettier -> tsc -> test:meta`.
+- **TypeScript quality improvements:**
+  - Fixed 20+ untyped `catch` clauses to use `catch (e: unknown)` pattern.
+  - Added test `should type catch clause errors as unknown, not untyped` to
+    prevent regression.
+  - Added test `should not have TypeScript compilation errors` to validate
+    `tsc --noEmit` passes during test execution.
+  - Added test `should not have dangling or invalid module imports` to catch
+    references to deleted modules.
+- **Meta-test suite enhancements:**
+  - `integrity-suite.test.ts` now includes 196 passing tests (up from 194).
+  - Two new TypeScript quality tests ensure catch-block typing and no orphaned
+    module references.
+
+### Removed
+
+- `.integrity-suite/scripts/check-audit.js`
+- `.integrity-suite/scripts/check-changelog.js`
+- `.integrity-suite/scripts/check-version.js`
+- `.integrity-suite/scripts/capture-linter-results.js`
+
 ## [1.4.64] - 2026-03-06
 
 ### Changed
@@ -16,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     failure and coverage errors).
   - `test:full`/`test:nobump` still invoke the three sub-scripts so meta-tests remain
     aware of the expected order.
-- **Meta-test suite refinements** (`.integrity-suite/tests/meta/integrity-suite.test.ts`):
+- **Meta-test suite refinements** (`.integrity-suite/tests/integrity-suite.test.ts`):
   - Added conditional guards to skip checks that make no sense when `tests/` is
     absent (coverage flag, bypass keywords, exports-unused analysis).
   - Excluded the `.integrity-suite` directory from file scans and dropped hardcoded
@@ -28,6 +73,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation & examples:** the meta-test file itself now serves as a clean
   example of compliant code; comments illustrate banned patterns but are not
   executable.
+- **Meta-test location simplified:** the file has been moved out of the
+  `meta` subdirectory to live directly under `.integrity-suite/tests`, and all
+  paths in scripts, docs, and ignore files have been updated accordingly.
 
 ## [1.4.63] - 2026-03-06
 

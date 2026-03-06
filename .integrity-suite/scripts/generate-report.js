@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');
-const reportsDir = path.join(rootDir, 'tests', 'meta', 'reports');
+const reportsDir = path.join(rootDir, '.integrity-suite', 'tests', 'reports');
 const resultsPath = path.join(reportsDir, 'results.json');
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 const reportFileName = `audit-report-${timestamp}.html`;
@@ -20,14 +20,11 @@ console.log('🚀 Generating Integrity Suite Audit Report...');
 try {
   // 1. Run Vitest with JSON reporter
   console.log('📦 Running meta-tests...');
-  execSync(
-    `npx vitest run .integrity-suite/tests/meta --reporter=json --outputFile="${resultsPath}"`,
-    {
-      cwd: rootDir,
-      stdio: 'inherit',
-      env: { ...process.env, INTEGRITY_SUITE_DEVELOPMENT: 'true' },
-    },
-  );
+  execSync(`npx vitest run .integrity-suite/tests --reporter=json --outputFile="${resultsPath}"`, {
+    cwd: rootDir,
+    stdio: 'inherit',
+    env: { ...process.env, INTEGRITY_SUITE_DEVELOPMENT: 'true' },
+  });
 } catch (error) {
   console.log(
     '⚠️  Some tests failed (this is expected in a real audit). Proceeding to generate report.',

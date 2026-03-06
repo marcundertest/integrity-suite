@@ -7,7 +7,7 @@ node_modules/
 coverage/
 .vitest-results/
 junit.xml
-.integrity-suite/tests/meta/reports/
+.integrity-suite/tests/reports/
 test-results/
 playwright-report/
 blob-report/
