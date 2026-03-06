@@ -68,6 +68,25 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 144
+
+- **Fecha**: 2026-03-06 17:00
+- **Versión**: 1.4.61
+- **Requerimiento**: eliminar el “LEVEL HOOK: Interacción física obligatoria” del pre-commit para evitar la interrupción manual.
+- **Información adicional**: el hook de nivel exigía un ENTER físico tras la validación, lo cual es innecesario; basta con ejecutar los tests.
+- **Interpretación**: borrar las líneas de eco y read del script `.husky/pre-commit` y actualizar documentación correspondiente.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `.husky/pre-commit` (modificado)
+  - `.integrity-suite/docs/requirements.md` (modificado)
+  - `CHANGELOG.md` (modificado)
+
+- **Tests**:
+  - `tests/meta/integrity-suite.test.ts` (no cambio necesario)
+- **Estado**: Completado
+- **Resultados de los tests**:
+  - **Iteración 1**: 2026-03-06 17:05 - ✅ 196 meta tests passed (hook behaviour unchanged except for prompt removal)
+
 ### Requerimiento 143
 
 - **Fecha**: 2026-03-06 16:40
