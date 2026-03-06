@@ -7,7 +7,6 @@ node_modules/
 coverage/
 .vitest-results/
 junit.xml
-.integrity-suite/integrity-suite.sha256
 tests/meta/reports/
 test-results/
 playwright-report/

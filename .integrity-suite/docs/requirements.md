@@ -68,6 +68,26 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 145
+
+- **Fecha**: 2026-03-06 17:30
+- **Versión**: 1.4.62
+- **Requerimiento**: suprimir el protocolo de hash SHA256 de la suite de integridad.
+- **Información adicional**: el fichero `.integrity-suite/integrity-suite.sha256` y los scripts/tests asociados ya no son útiles y se desean eliminar.
+- **Interpretación**: borrar el archivo y script, eliminar referencias en .gitignore y en el historial de requerimientos, y eliminar los tests correspondientes. Actualizar documentación y changelog.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `.husky/pre-commit` (modificado)
+  - `.integrity-suite/docs/requirements.md` (modificado)
+  - `CHANGELOG.md` (modificado)
+  - `package.json` (modificado)
+  - `tests/meta/integrity-suite.test.ts` (modificado)
+- **Tests**:
+  - `tests/meta/integrity-suite.test.ts` (modificado)
+- **Estado**: Completado
+- **Resultados de los tests**:
+  - **Iteración 1**: 2026-03-06 17:35 - ✅ 195 meta tests passed (hash protocol tests removed)
+
 ### Requerimiento 144
 
 - **Fecha**: 2026-03-06 17:00
@@ -80,7 +100,6 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
   - `.husky/pre-commit` (modificado)
   - `.integrity-suite/docs/requirements.md` (modificado)
   - `CHANGELOG.md` (modificado)
-
 - **Tests**:
   - `tests/meta/integrity-suite.test.ts` (no cambio necesario)
 - **Estado**: Completado

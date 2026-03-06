@@ -134,19 +134,6 @@ describe('Integrity Suite', () => {
       });
     });
 
-    it('should not have been tampered with (integrity hash check)', async () => {
-      const { createHash } = await import('node:crypto');
-      const selfPath = path.join(rootDir, 'tests', 'meta', 'integrity-suite.test.ts');
-      const hashPath = path.join(rootDir, '.integrity-suite', 'integrity-suite.sha256');
-
-      expect(fs.existsSync(hashPath), 'Missing integrity hash file').toBe(true);
-
-      const currentHash = createHash('sha256').update(fs.readFileSync(selfPath)).digest('hex');
-      const expectedHash = fs.readFileSync(hashPath, 'utf8').trim();
-
-      expect(currentHash, 'integrity-suite.test.ts has been modified!').toBe(expectedHash);
-    });
-
     it('should have a commit-msg hook that enforces commitlint', () => {
       const commitMsgPath = path.join(rootDir, '.husky', 'commit-msg');
       expect(fs.existsSync(commitMsgPath), '.husky/commit-msg hook is missing').toBe(true);
@@ -411,7 +398,6 @@ describe('Integrity Suite', () => {
         'blob-report',
         'src/__tests__',
         '.vitest-results',
-        '.integrity-suite/integrity-suite.sha256',
         '.integrity-suite/.user_secret',
         'tests/meta/reports',
       ];
@@ -683,18 +669,6 @@ describe('Integrity Suite', () => {
           `Kit vulnerability: .gitignore must not hide core kit files: ${line}`,
         ).toBe(false);
       });
-    });
-
-    it('should have a hash regeneration script for the integrity suite', () => {
-      const scriptPath = path.join(rootDir, '.integrity-suite', 'scripts', 'update-hash.js');
-      expect(
-        fs.existsSync(scriptPath),
-        'update-hash.js is missing: add a script to regenerate the integrity hash after legitimate test changes',
-      ).toBe(true);
-      expect(
-        pkg.scripts['update-integrity-hash'],
-        '"update-integrity-hash" script must be registered in package.json',
-      ).toBeDefined();
     });
 
     it('should not have silent bypass patterns in test:full', () => {
