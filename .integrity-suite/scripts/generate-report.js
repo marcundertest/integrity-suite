@@ -20,11 +20,14 @@ console.log('🚀 Generating Integrity Suite Audit Report...');
 try {
   // 1. Run Vitest with JSON reporter
   console.log('📦 Running meta-tests...');
-  execSync(`npx vitest run tests/meta --reporter=json --outputFile="${resultsPath}"`, {
-    cwd: rootDir,
-    stdio: 'inherit',
-    env: { ...process.env, INTEGRITY_SUITE_DEVELOPMENT: 'true' },
-  });
+  execSync(
+    `npx vitest run .integrity-suite/tests/meta --reporter=json --outputFile="${resultsPath}"`,
+    {
+      cwd: rootDir,
+      stdio: 'inherit',
+      env: { ...process.env, INTEGRITY_SUITE_DEVELOPMENT: 'true' },
+    },
+  );
 } catch (error) {
   console.log(
     '⚠️  Some tests failed (this is expected in a real audit). Proceeding to generate report.',

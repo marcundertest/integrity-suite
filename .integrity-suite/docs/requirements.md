@@ -68,6 +68,28 @@ Los requerimientos deben estar ordenados cronológicamente (del más reciente al
 
 ## Historial de requerimientos
 
+### Requerimiento 146
+
+- **Fecha**: 2026-03-06 18:00
+- **Versión**: 1.4.63
+- **Requerimiento**: mover la suite de pruebas meta (`integrity-suite.test.ts` y el directorio de reports) dentro del directorio oculto `.integrity-suite`.
+- **Información adicional**: para encapsular la infraestructura de la suite y evitar posibles filtraciones, las pruebas deben residir dentro del propio directorio de la suite.
+- **Interpretación**: crear `.integrity-suite/tests/meta`, trasladar el fichero y la carpeta allí, actualizar referencias en scripts, tests, .gitignore, documentación y changelog; adaptar rutas en todos los archivos existentes.
+- **Testeable**: true
+- **Archivos afectados**:
+  - `package.json` (modificado)
+  - `.prettierignore` (modificado)
+  - `.gitignore` (modificado)
+  - `.integrity-suite/scripts/generate-report.js` (modificado)
+  - `.integrity-suite/docs/prompt.md` (modificado)
+  - `.integrity-suite/docs/requirements.md` (modificado)
+  - `.integrity-suite/tests/meta/integrity-suite.test.ts` (movido/modificado)
+- **Tests**:
+  - `.integrity-suite/tests/meta/integrity-suite.test.ts` (modificado)
+- **Estado**: Completado
+- **Resultados de los tests**:
+  - **Iteración 1**: 2026-03-06 18:05 - ✅ todos los meta tests pasan desde la nueva ubicación
+
 ### Requerimiento 145
 
 - **Fecha**: 2026-03-06 17:30

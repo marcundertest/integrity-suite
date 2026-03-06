@@ -4,12 +4,13 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 // @ts-expect-error - JS module without types
-import { validateVersion } from '../../.integrity-suite/scripts/check-version.js';
+import { validateVersion } from '../../scripts/check-version.js';
 // @ts-expect-error - JS module without types
-import { validateChangelog } from '../../.integrity-suite/scripts/check-changelog.js';
+import { validateChangelog } from '../../scripts/check-changelog.js';
 
 describe('Integrity Suite', () => {
-  const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+  // adjust path: meta -> tests -> .integrity-suite -> project root
+  const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
   const getFiles = (dir: string, allFiles: string[] = []) => {
     if (!fs.existsSync(dir)) return allFiles;
@@ -326,7 +327,7 @@ describe('Integrity Suite', () => {
           'build',
           'coverage',
           'pnpm-lock.yaml',
-          'tests/meta/reports',
+          '.integrity-suite/tests/meta/reports',
         ],
         '.markdownlintignore': ['node_modules', 'dist', 'build', 'coverage'],
       };
@@ -399,7 +400,7 @@ describe('Integrity Suite', () => {
         'src/__tests__',
         '.vitest-results',
         '.integrity-suite/.user_secret',
-        'tests/meta/reports',
+        '.integrity-suite/tests/meta/reports',
       ];
       lines.forEach((line) => {
         const norm = normalize(line);
@@ -648,12 +649,14 @@ describe('Integrity Suite', () => {
         '.integrity-suite/docs/prompt.md',
         '.integrity-suite/docs/workflow.md',
         '.integrity-suite/scripts',
-        'tests/meta',
-        'tests/meta/integrity-suite.test.ts',
+        '.integrity-suite/tests/meta',
+        '.integrity-suite/tests/meta/integrity-suite.test.ts',
       ];
 
       lines.forEach((line) => {
-        const isReport = line === 'tests/meta/reports' || line.startsWith('tests/meta/reports');
+        const isReport =
+          line === '.integrity-suite/tests/meta/reports' ||
+          line.startsWith('.integrity-suite/tests/meta/reports');
         const targetsCoreKit =
           !isReport &&
           coreKitPatterns.some((p) => line === p || line.startsWith(p) || p.startsWith(line));
@@ -717,7 +720,7 @@ describe('Integrity Suite', () => {
       }
 
       // Allow integrity-suite.test.ts to be modified for test improvements
-      if (p === 'tests/meta/integrity-suite.test.ts') {
+      if (p === '.integrity-suite/tests/meta/integrity-suite.test.ts') {
         return;
       }
 
