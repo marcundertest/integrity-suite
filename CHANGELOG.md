@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.112] - 2026-03-07
+
+### Changed
+
+- Moved `semverGt` declaration in `tests/meta/shared.ts` to the end of the file so that all imports precede any code, satisfying ES module style and avoiding potential meta-test false positives.
+
 ## [1.4.111] - 2026-03-07
 
 ### Removed
