@@ -133,8 +133,14 @@ try {
 
   // Historical trend persistence
   const historyPath = path.join(reportsDir, 'history.json');
-  const history: Array<{ date: string; score: number; passed: number; total: number }> =
-    fs.existsSync(historyPath) ? JSON.parse(fs.readFileSync(historyPath, 'utf8')) : [];
+  let history: Array<{ date: string; score: number; passed: number; total: number }> = [];
+  try {
+    if (fs.existsSync(historyPath)) {
+      history = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
+    }
+  } catch {
+    history = [];
+  }
 
   history.push({
     date: new Date().toISOString(),
