@@ -64,7 +64,14 @@ describe('Level 1: Project Metadata & README @metadata', () => {
       });
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : String(e);
-      const networkErrors = ['ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT', 'network', 'socket hang up'];
+      const networkErrors = [
+        'ENOTFOUND',
+        'ECONNREFUSED',
+        'ETIMEDOUT',
+        'EAI_AGAIN',
+        'ECONNRESET',
+        'socket hang up',
+      ];
       const isNetworkError = networkErrors.some((err) => errorMessage.includes(err));
 
       if (isNetworkError) {
@@ -72,14 +79,11 @@ describe('Level 1: Project Metadata & README @metadata', () => {
         return;
       }
 
-      if (errorMessage.includes('registry') || errorMessage.includes('fetch')) {
-        console.warn('⚠️  Audit warning: registry unreachable. Check registry status.');
-        return;
-      }
-
-      if (errorMessage.includes('vulnerabilities')) {
-        expect(false, '❌ Audit failed: vulnerabilities detected in dependencies').toBe(true);
-      }
+      const isVulnerability = errorMessage.toLowerCase().includes('vulnerabilities');
+      expect(
+        !isVulnerability,
+        `❌ Audit failed: vulnerabilities detected in dependencies. Details:\n${errorMessage}`,
+      ).toBe(true);
 
       expect(false, `Audit failed with unexpected error: ${errorMessage}`).toBe(true);
     }
