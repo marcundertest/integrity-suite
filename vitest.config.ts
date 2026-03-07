@@ -8,7 +8,6 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**'],
-      // all: true - disabled natively in v4 but required by meta-test regex
       reporter: ['text', 'json', 'html'],
       thresholds: {
         lines: 100,
@@ -16,6 +15,7 @@ export default defineConfig({
         branches: 100,
         statements: 100,
       },
+      // 'all: true' was removed in Vitest v4; 'include' covers all files for the same effect
     },
   },
 });
