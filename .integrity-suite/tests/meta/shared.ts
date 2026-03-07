@@ -124,16 +124,6 @@ export function getNodesByType(node: any, type: string, results: any[] = []): an
   return results;
 }
 
-export function semverGt(a: string, b: string): boolean {
-  const parse = (v: string) =>
-    v
-      .split('-')[0]
-      .split('.')
-      .map((p) => parseInt(p, 10));
-  const [aMaj, aMin, aPat] = parse(a);
-  const [bMaj, bMin, bPat] = parse(b);
-  if (aMaj !== bMaj) return aMaj > bMaj;
-  if (aMin !== bMin) return aMin > bMin;
-  if (aPat !== bPat) return aPat > bPat;
-  return !a.includes('-') && b.includes('-');
-}
+import { gt } from 'semver';
+
+export const semverGt = (a: string, b: string): boolean => gt(a, b);
