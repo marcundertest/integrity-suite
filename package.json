@@ -1,6 +1,6 @@
 {
   "name": "integrity-suite",
-  "version": "1.4.97",
+  "version": "1.4.98",
   "type": "module",
   "description": "Strict project template for automated setup and code quality.",
   "main": "index.js",
@@ -12,11 +12,14 @@
     "test:full": "eslint . --max-warnings 0 && markdownlint . && prettier --check . && tsc --noEmit && vitest run .integrity-suite/tests && pnpm test:unit && pnpm test:e2e",
     "test:develop": "eslint . --max-warnings 0 && markdownlint . && prettier --check . && tsc --noEmit && vitest run .integrity-suite/tests/meta && pnpm test:unit && pnpm test:e2e",
     "test:report": "tsx .integrity-suite/scripts/generate-report.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "version": "changeset version",
+    "release": "pnpm build && changeset publish"
   },
   "author": "Marc Galindo (marcundertest) - https://marcundertest.com",
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
+    "@changesets/cli": "2.30.0",
     "@commitlint/cli": "20.0.0",
     "@commitlint/config-conventional": "20.0.0",
     "@types/node": "25.3.3",
