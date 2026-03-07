@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { execSync } from 'node:child_process';
+import * as ts from 'typescript';
 import { rootDir, codeFiles, pkg, allSourceFiles, testsDir, hasTailwind, getFiles } from './shared';
 
 describe('Level 5: Architecture & Security @security', () => {
@@ -64,12 +65,30 @@ describe('Level 5: Architecture & Security @security', () => {
       .filter((f) => f.startsWith(srcDir))
       .forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
-        const manyParamsPattern =
-          /(?:function\s+\w+|(?:const|let)\s+\w+\s*=\s*(?:async\s*)?\()\s*[^)]*,[^)]*,[^)]*,[^)]*,[^)]/;
+        const sourceFile = ts.createSourceFile(file, content, ts.ScriptTarget.Latest, true);
+
+        let hasTooManyParams = false;
+
+        const visit = (node: ts.Node) => {
+          if (
+            ts.isFunctionDeclaration(node) ||
+            ts.isArrowFunction(node) ||
+            ts.isFunctionExpression(node) ||
+            ts.isMethodDeclaration(node)
+          ) {
+            if (node.parameters.length > 4) {
+              hasTooManyParams = true;
+            }
+          }
+          ts.forEachChild(node, visit);
+        };
+
+        visit(sourceFile);
+
         expect(
-          content,
+          hasTooManyParams,
           `Function with 5+ parameters in ${file}: consider a config object`,
-        ).not.toMatch(manyParamsPattern);
+        ).toBe(false);
       });
   });
 
