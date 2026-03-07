@@ -61,6 +61,7 @@ describe('Level 1: Project Metadata & README @metadata', () => {
       execSync('pnpm audit --prod', {
         stdio: 'pipe',
         encoding: 'utf8',
+        timeout: 30000,
       });
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : String(e);

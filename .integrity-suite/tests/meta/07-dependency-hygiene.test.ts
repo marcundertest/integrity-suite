@@ -27,7 +27,7 @@ describe('Level 7: Dependency Hygiene @dependencies', () => {
 
     const [, expectedVersion] = pkg.packageManager!.split('@');
     try {
-      const installedVersion = execSync('pnpm --version').toString().trim();
+      const installedVersion = execSync('pnpm --version', { timeout: 30000 }).toString().trim();
       expect(
         installedVersion,
         `Installed pnpm version (${installedVersion}) does not match packageManager (${expectedVersion})`,
