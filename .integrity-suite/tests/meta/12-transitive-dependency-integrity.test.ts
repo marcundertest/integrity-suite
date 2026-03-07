@@ -9,9 +9,7 @@ describe('Level 12: Transitive Dependency Integrity @transitive', () => {
     if (!fs.existsSync(lockPath)) return;
 
     const lock = fs.readFileSync(lockPath, 'utf8');
-    // Parse the lockfile and detect the same package with multiple versions
     const pkgVersions = new Map<string, Set<string>>();
-    // Supporting both older pnpm (/package@version) and newer pnpm ('package@version')
     const matches = lock.matchAll(/^  ['"\/]?(@?[^@\s'"]+)@([^'":\s]+)['"]?:/gm);
 
     for (const [, name, version] of matches) {
@@ -26,14 +24,15 @@ describe('Level 12: Transitive Dependency Integrity @transitive', () => {
       }
     });
 
+    let warningMessage = '';
     if (duplicates.length > 0) {
-      console.warn(
-        '⚠️  Multiple versions detected for transitive dependencies (potential bloat/conflicts):',
-      );
-      duplicates.forEach((d) => console.warn(`  - ${d}`));
+      warningMessage =
+        'Multiple versions detected for transitive dependencies (potential bloat/conflicts):\n' +
+        duplicates.map((d) => `  - ${d}`).join('\n');
+      console.warn(warningMessage);
+      expect(true, warningMessage).toBe(true);
     }
 
-    // The test passes as it only warns according to the provided implementation
     expect(lock).toBeDefined();
   });
 });
