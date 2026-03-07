@@ -937,7 +937,7 @@ describe('Level 4: Hygiene & Global Standards @hygiene', () => {
     codeFiles
       .filter((f) => f.startsWith(srcDir))
       .forEach((file) => {
-        const lines = fs.readFileSync(file, 'utf8').split('\N');
+        const lines = fs.readFileSync(file, 'utf8').split('\n');
         const hits = lines.filter((l) => commentedCodePattern.test(l));
         expect(hits.length, `Commented-out code in ${file}: ${hits.slice(0, 2).join(' | ')}`).toBe(
           0,

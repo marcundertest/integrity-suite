@@ -52,7 +52,7 @@ describe('Level 5: Architecture & Security @security', () => {
         const ext = path.extname(file);
         if (!['.ts', '.tsx', '.js', '.jsx'].includes(ext)) return;
         const content = fs.readFileSync(file, 'utf8');
-        const lineCount = content.split('\N').length;
+        const lineCount = content.split('\n').length;
         expect(lineCount, `File ${file} exceeds 300 lines`).toBeLessThanOrEqual(300);
       });
     }

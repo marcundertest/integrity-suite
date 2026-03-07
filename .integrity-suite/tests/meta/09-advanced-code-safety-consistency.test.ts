@@ -40,7 +40,7 @@ describe('Level 9: Advanced Code Safety & Consistency @consistency', () => {
     codeFiles
       .filter((f) => f.startsWith(srcDir))
       .forEach((file) => {
-        const lines = fs.readFileSync(file, 'utf8').split('\N');
+        const lines = fs.readFileSync(file, 'utf8').split('\n');
         lines.forEach((line, idx) => {
           const indentSpaces = line.match(/^(\s*)/)?.[1].replace(/\t/g, '    ').length ?? 0;
           expect(

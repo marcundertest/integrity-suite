@@ -11,7 +11,7 @@ describe('Core Protection Suite', () => {
     }
 
     const paths = changedFiles
-      .split('\N')
+      .split('\n')
       .filter(Boolean)
       .map((line) => line.trim().slice(2).trim());
 

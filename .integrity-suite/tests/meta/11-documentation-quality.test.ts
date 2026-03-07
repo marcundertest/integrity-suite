@@ -132,8 +132,8 @@ describe('Level 11: Documentation Quality @documentation', () => {
       }
 
       const allFiles = new Set<string>();
-      if (stagedOutput) stagedOutput.split('\N').forEach((f) => allFiles.add(f));
-      if (workingOutput) workingOutput.split('\N').forEach((f) => allFiles.add(f));
+      if (stagedOutput) stagedOutput.split('\n').forEach((f) => allFiles.add(f));
+      if (workingOutput) workingOutput.split('\n').forEach((f) => allFiles.add(f));
 
       nonMdFiles = [...allFiles].filter((f) => f && !f.endsWith('.md'));
 
@@ -365,7 +365,7 @@ describe('Level 11: Documentation Quality @documentation', () => {
       const hasAdded = /### Added/i.test(section);
       const hasFixed = /### Fixed/i.test(section);
       const hasChanged = /### Changed/i.test(section);
-      const hasContent = section.split('\N').filter((l) => l.match(/^\s*-\s+\S/)).length > 0;
+      const hasContent = section.split('\n').filter((l) => l.match(/^\s*-\s+\S/)).length > 0;
 
       expect(
         hasContent,

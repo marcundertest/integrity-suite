@@ -41,7 +41,7 @@ describe('Level 2: Strict Workflow (Pipeline) @workflow', () => {
     } catch (e: unknown) {
       return; // No git history yet
     }
-    const messages = log.split('\N').filter(Boolean);
+    const messages = log.split('\n').filter(Boolean);
     messages.forEach((msg) => {
       const isAscii = [...msg].every((char) => char.charCodeAt(0) <= 127);
       expect(isAscii, `Non-English commit message found: "${msg}"`).toBe(true);
@@ -60,7 +60,7 @@ describe('Level 2: Strict Workflow (Pipeline) @workflow', () => {
       return;
     }
     const scopePattern = /^[a-z]+\([^)]+\):/;
-    const messages = log.split('\N').filter(Boolean);
+    const messages = log.split('\n').filter(Boolean);
     messages.forEach((msg) => {
       expect(msg, `Commit with forbidden scope found: "${msg}"`).not.toMatch(scopePattern);
     });
@@ -129,7 +129,7 @@ describe('Level 2: Strict Workflow (Pipeline) @workflow', () => {
       if (!fs.existsSync(filePath)) return;
       const lines = fs
         .readFileSync(filePath, 'utf8')
-        .split('\N')
+        .split('\n')
         .map((l) => l.trim())
         .filter((l) => l && !l.startsWith('#'));
       lines.forEach((line) => {
@@ -145,7 +145,7 @@ describe('Level 2: Strict Workflow (Pipeline) @workflow', () => {
   it('Should not have unexpected entries in .gitignore beyond build artifacts', () => {
     const content = fs.readFileSync(path.join(rootDir, '.gitignore'), 'utf8');
     const lines = content
-      .split('\N')
+      .split('\n')
       .map((l) => l.trim())
       .filter((l) => l && !l.startsWith('#'));
     const normalize = (s: string) => s.replace(/\/+$/, '');
@@ -308,7 +308,7 @@ describe('Level 2: Strict Workflow (Pipeline) @workflow', () => {
 
     const content = fs.readFileSync(gitignorePath, 'utf8');
     const lines = content
-      .split('\N')
+      .split('\n')
       .map((l) => l.trim().replace(/\/+$/, ''))
       .filter((l) => l && !l.startsWith('#'));
 
