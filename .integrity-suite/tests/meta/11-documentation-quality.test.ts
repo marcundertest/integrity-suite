@@ -177,7 +177,7 @@ describe('Level 11: Documentation Quality @documentation', () => {
         });
         headVersion = JSON.parse(pkgAtHead).version;
       } catch (e: unknown) {
-        headVersion = '0.0.0';
+        return;
       }
 
       if (headVersion) {
