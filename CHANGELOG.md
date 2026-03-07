@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.110] - 2026-03-07
+
+### Changed
+
+- Accessibility test now checks for actual usage of axe-core or equivalent in test files, not just dependency presence.
+
 ## [1.4.109] - 2026-03-07
 
 ### Changed

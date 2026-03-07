@@ -997,5 +997,14 @@ describe('Level 4: Hygiene & Global Standards @hygiene', () => {
       hasA11yTool,
       'Projects with JSX/TSX should include axe-core or an equivalent for runtime accessibility testing due to regex limitations on dynamic attributes.',
     ).toBe(true);
+
+    const testFiles = allSourceFiles.filter(
+      (f) => testsDirs.some((dir) => f.startsWith(dir)) && /\.(test|spec)\.(ts|tsx)$/.test(f),
+    );
+    const isUsed = testFiles.some((f) => {
+      const content = fs.readFileSync(f, 'utf8');
+      return a11yTools.some((tool) => content.includes(tool));
+    });
+    expect(isUsed, 'axe-core is installed but not used in any test file').toBe(true);
   });
 });
