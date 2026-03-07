@@ -25,7 +25,6 @@ if (!fs.existsSync(reportsDir)) {
 
 try {
   try {
-    console.log('Running meta-tests...');
     execSync(
       `pnpm exec vitest run .integrity-suite/tests --reporter=json --outputFile="${resultsPath}"`,
       {
@@ -34,11 +33,8 @@ try {
       },
     );
   } catch (error) {
-    console.log(
-      'Some tests failed (this is expected in a real audit). Proceeding to generate report.',
-    );
+    // ignore failures, continue to build report
   }
-
   if (!fs.existsSync(resultsPath)) {
     throw new Error('Results file was not generated. Check if vitest ran correctly.');
   }
@@ -567,15 +563,12 @@ try {
 `;
 
   fs.writeFileSync(htmlPath, htmlContent);
-  console.log(`Report generated successfully at: ${htmlPath}`);
 
   try {
     const openCmd =
       process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
     execSync(`${openCmd} "${htmlPath}"`);
-  } catch (e) {
-    console.log('Note: Could not auto-open report, but it is available at:', htmlPath);
-  }
+  } catch (e) {}
 } finally {
   if (fs.existsSync(resultsPath)) {
     fs.unlinkSync(resultsPath);

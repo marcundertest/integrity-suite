@@ -76,7 +76,6 @@ describe('Level 4: Hygiene & Global Standards @hygiene', () => {
   it('Should forbid print statements in source', () => {
     codeFiles.forEach((file) => {
       const parts = file.split(path.sep);
-      if (parts.includes('.integrity-suite')) return;
       const content = fs.readFileSync(file, 'utf8');
       const consoleRegex = new RegExp('console\\.(log|debug|info|error|warn)', 'i');
       expect(content, `Console usage in ${file}`).not.toMatch(consoleRegex);
