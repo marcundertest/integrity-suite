@@ -195,7 +195,6 @@ describe('Level 3: TypeScript Strictness & Config @typescript', () => {
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe'],
       });
-      expect(true).toBe(true);
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : String(e);
       expect(false, `TypeScript compilation failed:\n${errorMessage}`).toBe(true);

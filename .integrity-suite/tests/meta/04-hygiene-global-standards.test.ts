@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { execSync } from 'node:child_process';
-import { rootDir, codeFiles, pkg, allSourceFiles, testsDir, hasTailwind } from './shared';
+import { rootDir, codeFiles, pkg, allSourceFiles, testsDir, hasTailwind, getFiles } from './shared';
 
 describe('Level 4: Hygiene & Global Standards @hygiene', () => {
   it('Should forbid em dash in Spanish source code comments', () => {
@@ -103,9 +103,12 @@ describe('Level 4: Hygiene & Global Standards @hygiene', () => {
   });
 
   it('Should not have trivially passing dummy assertions in test files', () => {
-    const testFiles = allSourceFiles.filter(
-      (f) => f.startsWith(testsDir) && /\.(test|spec)\.(ts|tsx)$/.test(f),
-    );
+    const metaTestsDir = path.join(rootDir, '.integrity-suite', 'tests');
+    const metaTestFiles = getFiles(metaTestsDir).filter((f) => /\.(test|spec)\.(ts|tsx)$/.test(f));
+    const testFiles = [
+      ...allSourceFiles.filter((f) => f.startsWith(testsDir) && /\.(test|spec)\.(ts|tsx)$/.test(f)),
+      ...metaTestFiles,
+    ];
     testFiles.forEach((file) => {
       const content = fs.readFileSync(file, 'utf8');
       const trivialPatterns = [

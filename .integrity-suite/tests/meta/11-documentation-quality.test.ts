@@ -318,8 +318,6 @@ describe('Level 11: Documentation Quality @documentation', () => {
         );
       }
     });
-
-    expect(true).toBe(true); // Placeholder pass if no errors thrown
   });
 
   it('Should ensure all changelog versions follow valid semver and are in descending order', () => {
