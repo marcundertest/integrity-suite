@@ -1,0 +1,87 @@
+import { describe, it, expect } from 'vitest';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { execSync } from 'node:child_process';
+import { rootDir, codeFiles, pkg, allSourceFiles, testsDir, hasTailwind } from './shared';
+
+describe('Level 1: Project Metadata & README @metadata', () => {
+  it('should forbid em dash in Markdown documentation files', () => {
+    const mdFiles = allSourceFiles.filter((f) => f.endsWith('.md'));
+    mdFiles.forEach((file) => {
+      const content = fs.readFileSync(file, 'utf8');
+      const withoutCodeBlocks = content.replace(/```[\s\S]*?```/g, '');
+      expect(
+        withoutCodeBlocks,
+        `Em dash (\u2014) found in ${file} : use ":" or ";" instead`,
+      ).not.toContain('\u2014');
+    });
+  });
+
+  it('should forbid em dash in integrity-suite documentation', () => {
+    const docsDir = path.join(rootDir, '.integrity-suite', 'docs');
+    if (!fs.existsSync(docsDir)) return;
+    fs.readdirSync(docsDir)
+      .filter((f) => f.endsWith('.md'))
+      .forEach((f) => {
+        const content = fs.readFileSync(path.join(docsDir, f), 'utf8');
+        const withoutCodeBlocks = content.replace(/```[\s\S]*?```/g, '');
+        expect(
+          withoutCodeBlocks,
+          `Em dash (\u2014) found in .integrity-suite/docs/${f}: use ":" or ";" instead`,
+        ).not.toContain('\u2014');
+      });
+  });
+
+  it('should have valid package.json metadata', () => {
+    expect(pkg.name).toBeDefined();
+    expect(pkg.name.length).toBeGreaterThan(0);
+    expect(pkg.author).toBeDefined();
+    expect(pkg.version).toBeDefined();
+  });
+
+  it('should have a README.md with essential sections', () => {
+    const readmePath = path.join(rootDir, 'README.md');
+    expect(fs.existsSync(readmePath), 'README.md is missing').toBe(true);
+    const content = fs.readFileSync(readmePath, 'utf8');
+    expect(content).toContain('Installation');
+    expect(content).toContain('Usage');
+    expect(content).toContain('Contribution');
+  });
+
+  it('should have essential dependencies installed', () => {
+    const devDeps = pkg.devDependencies || {};
+    const required = ['vitest', 'husky', 'typescript', 'eslint', 'prettier', 'markdownlint-cli'];
+    required.forEach((dep) => {
+      expect(devDeps[dep], `Missing required devDependency: ${dep}`).toBeDefined();
+    });
+  });
+
+  it('should pass security audit with resilience to network errors', () => {
+    try {
+      execSync('pnpm audit --prod', {
+        stdio: 'pipe',
+        encoding: 'utf8',
+      });
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      const networkErrors = ['ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT', 'network', 'socket hang up'];
+      const isNetworkError = networkErrors.some((err) => errorMessage.includes(err));
+
+      if (isNetworkError) {
+        console.warn('⚠️  Audit skipped: network unavailable. Check audit later.');
+        return;
+      }
+
+      if (errorMessage.includes('registry') || errorMessage.includes('fetch')) {
+        console.warn('⚠️  Audit warning: registry unreachable. Check registry status.');
+        return;
+      }
+
+      if (errorMessage.includes('vulnerabilities')) {
+        expect(false, '❌ Audit failed: vulnerabilities detected in dependencies').toBe(true);
+      }
+
+      expect(false, `Audit failed with unexpected error: ${errorMessage}`).toBe(true);
+    }
+  });
+});

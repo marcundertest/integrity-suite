@@ -1,12 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 
 describe('Core Protection Suite', () => {
-  const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-
   it('should protect core kit files from unauthorized modification @core-protection', async () => {
     let changedFiles = '';
     try {
@@ -24,7 +19,7 @@ describe('Core Protection Suite', () => {
       if (p.startsWith('.integrity-suite/')) {
         expect(
           false,
-          `🔒 Core kit protection: .integrity-suite/* is protected from modification: ${p}`,
+          `Core kit protection: .integrity-suite/* is protected from modification: ${p}`,
         ).toBe(true);
       }
     });

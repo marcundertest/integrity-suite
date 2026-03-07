@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.76] - 2026-03-07
+
+### Refactored
+
+- Split the monolithic `integrity-suite.test.ts` into individual test files by category inside `.integrity-suite/tests/meta/`.
+- Adjusted testing pipelines and tools to automatically discover tests within the new categorized meta-test directory schema.
+- Cleaned up unnecessary verbose comments from the `generate-report.ts` script to improve code readability.
+
 ## [1.4.75] - 2026-03-07
 
 ### Fixed

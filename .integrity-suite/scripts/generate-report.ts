@@ -15,42 +15,52 @@ if (!fs.existsSync(reportsDir)) {
   fs.mkdirSync(reportsDir, { recursive: true });
 }
 
-console.log('🚀 Generating Integrity Suite Audit Report...');
+console.log('Generating Integrity Suite Audit Report...');
 
 try {
-  // 1. Run Vitest with JSON reporter to collect results from all suites
-  console.log('📦 Running meta-tests...');
+  console.log('Running meta-tests...');
   execSync(`npx vitest run .integrity-suite/tests --reporter=json --outputFile="${resultsPath}"`, {
     cwd: rootDir,
     stdio: 'inherit',
   });
 } catch (error) {
   console.log(
-    '⚠️  Some tests failed (this is expected in a real audit). Proceeding to generate report.',
+    'Some tests failed (this is expected in a real audit). Proceeding to generate report.',
   );
 }
 
-// 2. Read and parse results
 if (!fs.existsSync(resultsPath)) {
-  console.error('❌ Error: Results file was not generated.');
+  console.error('Error: Results file was not generated.');
   process.exit(1);
 }
 
 const data = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
 const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
 
-// 3. Helper to group tests by Level / Category
-const categories = {};
-data.testResults.forEach((fileResult) => {
-  fileResult.assertionResults.forEach((test) => {
-    // Extract category from title (e.g., [Level 0: ... @tag])
+interface CategoryData {
+  passed: number;
+  failed: number;
+  total: number;
+  tests: any[];
+  sortKey: number;
+}
+const categories: Record<string, CategoryData> = {};
+data.testResults.forEach((fileResult: any) => {
+  fileResult.assertionResults.forEach((test: any) => {
     const categoryMatch = test.ancestorTitles[0]?.match(/Level (\d+): ([^@]+)/);
-    const categoryName = categoryMatch
-      ? `Level ${categoryMatch[1]}: ${categoryMatch[2].trim()}`
-      : 'General';
+    let categoryName = 'General';
+    let sortKey = 999;
+
+    if (categoryMatch) {
+      categoryName = `Level ${categoryMatch[1]}: ${categoryMatch[2].trim()}`;
+      sortKey = parseInt(categoryMatch[1], 10);
+    } else if (test.ancestorTitles.includes('Core Protection Suite')) {
+      categoryName = 'Core Protection';
+      sortKey = -1;
+    }
 
     if (!categories[categoryName]) {
-      categories[categoryName] = { passed: 0, failed: 0, total: 0, tests: [] };
+      categories[categoryName] = { passed: 0, failed: 0, total: 0, tests: [], sortKey };
     }
 
     categories[categoryName].total++;
@@ -68,7 +78,6 @@ const passedTests = data.numPassedTests;
 const failedTests = data.numFailedTests;
 const successRate = ((passedTests / totalTests) * 100).toFixed(1);
 
-// 4. Generate HTML
 const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
@@ -286,7 +295,7 @@ const htmlContent = `
         <div class="summary-grid">
             <div class="summary-item">
                 <span class="summary-label">Score</span>
-                <span class="summary-value ${successRate >= 90 ? 'value-success' : 'value-destructive'}">${successRate}%</span>
+                <span class="summary-value ${Number(successRate) >= 90 ? 'value-success' : 'value-destructive'}">${successRate}%</span>
             </div>
             <div class="summary-item">
                 <span class="summary-label">Tests</span>
@@ -308,7 +317,7 @@ const htmlContent = `
         </div>
         <main>
             ${Object.entries(categories)
-              .sort()
+              .sort((a, b) => a[1].sortKey - b[1].sortKey)
               .map(
                 ([name, data]) => `
                 <div class="category-card">
@@ -359,19 +368,16 @@ const htmlContent = `
                 const isToggleOff = activeEl && activeEl.classList.contains('active');
                 const finalStatus = isToggleOff ? 'all' : status;
 
-                // Reset summary active states
                 triggers.forEach(t => {
                     if (t.classList.contains('summary-item')) {
                         t.classList.remove('active');
                     }
                 });
 
-                // Apply active state if not toggling off
                 if (!isToggleOff && activeEl && activeEl.classList.contains('summary-item')) {
                     activeEl.classList.add('active');
                 }
 
-                // UI Management
                 clearBtn.style.display = finalStatus === 'all' ? 'none' : 'inline-block';
 
                 items.forEach(item => {
@@ -395,18 +401,16 @@ const htmlContent = `
 `;
 
 fs.writeFileSync(htmlPath, htmlContent);
-console.log(`✅ Report generated successfully at: ${htmlPath}`);
+console.log(`Report generated successfully at: ${htmlPath}`);
 
-// 5. Auto-open report
 try {
   const openCmd =
     process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
   execSync(`${openCmd} "${htmlPath}"`);
 } catch (e) {
-  console.log('💡 Note: Could not auto-open report, but it is available at:', htmlPath);
+  console.log('Note: Could not auto-open report, but it is available at:', htmlPath);
 }
 
-// Cleanup temporary JSON
 if (fs.existsSync(resultsPath)) {
   fs.unlinkSync(resultsPath);
 }
