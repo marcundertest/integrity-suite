@@ -198,7 +198,7 @@ try {
     <title>Integrity Suite Audit Report</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=block" rel="stylesheet">
     <style>
         :root {
             --background: 0 0% 100%;
@@ -227,12 +227,18 @@ try {
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
             background-color: hsl(var(--background));
             color: hsl(var(--foreground));
             line-height: 1.5;
             padding: 3rem 1rem;
             -webkit-font-smoothing: antialiased;
+            opacity: 0;
+            transition: opacity 0.2s ease-in;
+        }
+
+        body.fonts-loaded {
+            opacity: 1;
         }
 
         .container { max-width: 800px; margin: 0 auto; }
@@ -395,7 +401,20 @@ try {
         }
     </style>
 </head>
-<body>
+<body class="no-fout">
+    <script>
+        // Prevent FOUT (Flash of Unstyled Text)
+        (function() {
+            const showBody = () => document.body.classList.add('fonts-loaded');
+            if ('fonts' in document) {
+                document.fonts.ready.then(showBody);
+                // Fallback after 1s
+                setTimeout(showBody, 1000);
+            } else {
+                showBody();
+            }
+        })();
+    </script>
     <div class="container">
         <header>
             <div>
