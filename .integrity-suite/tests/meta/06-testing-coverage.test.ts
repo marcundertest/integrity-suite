@@ -87,7 +87,11 @@ describe('Level 6: Testing & Coverage @testing', () => {
 
   it('Should enforce test coverage flag in package.json scripts', () => {
     if (!fs.existsSync(testsDir)) return;
-    expect(pkg.scripts['test:unit']).toContain('--coverage');
+    const unitScript = pkg.scripts['test:unit'];
+    expect(unitScript, 'test:unit script is missing from package.json').toBeDefined();
+    if (unitScript) {
+      expect(unitScript).toContain('--coverage');
+    }
   });
 
   it('Should not have bootstrap files remaining when real functionality is present', () => {

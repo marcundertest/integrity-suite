@@ -6,10 +6,10 @@ import { rootDir, codeFiles, pkg, allSourceFiles, testsDir, hasTailwind } from '
 
 describe('Level 2: Strict Workflow (Pipeline) @workflow', () => {
   it('Should have essential scripts in package.json', () => {
-    expect(pkg.scripts['build']).toBeDefined();
-    expect(pkg.scripts['test:full']).toBeDefined();
-    expect(pkg.scripts['test:report']).toBeDefined();
-    expect(pkg.scripts['start']).toBeDefined();
+    expect(pkg.scripts?.['build']).toBeDefined();
+    expect(pkg.scripts?.['test:full']).toBeDefined();
+    expect(pkg.scripts?.['test:report']).toBeDefined();
+    expect(pkg.scripts?.['start']).toBeDefined();
   });
 
   it('Should not allow HUSKY=0 bypass in any script', () => {
@@ -206,18 +206,21 @@ describe('Level 2: Strict Workflow (Pipeline) @workflow', () => {
 
   it('Should have a zero-tolerance validation script with consolidated validations in tests', () => {
     const script = pkg.scripts['test:full'];
-    expect(script).toContain('eslint . --max-warnings 0');
-    expect(script).toContain('markdownlint .');
-    expect(script).toContain('prettier --check .');
-    expect(script).toContain('tsc --noEmit');
-    expect(script).toContain('vitest run .integrity-suite/tests');
-    expect(script).not.toContain('check-version');
-    expect(script).not.toContain('check-changelog');
-    expect(script).not.toContain('check-audit.js');
-    expect(
-      script.indexOf('vitest run .integrity-suite/tests'),
-      'vitest tests must run before other test suites',
-    ).toBeLessThan(script.indexOf('test:unit'));
+    expect(script, 'test:full script is missing').toBeDefined();
+    if (script) {
+      expect(script).toContain('eslint . --max-warnings 0');
+      expect(script).toContain('markdownlint .');
+      expect(script).toContain('prettier --check .');
+      expect(script).toContain('tsc --noEmit');
+      expect(script).toContain('vitest run .integrity-suite/tests');
+      expect(script).not.toContain('check-version');
+      expect(script).not.toContain('check-changelog');
+      expect(script).not.toContain('check-audit.js');
+      expect(
+        script.indexOf('vitest run .integrity-suite/tests'),
+        'vitest tests must run before other test suites',
+      ).toBeLessThan(script.indexOf('test:unit'));
+    }
   });
 
   it('Should call all three test suites in correct order in test:full', () => {

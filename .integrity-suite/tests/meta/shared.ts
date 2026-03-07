@@ -33,5 +33,20 @@ export const codeFiles = allSourceFiles.filter((f) => {
   const ext = path.extname(f);
   return ['.ts', '.js', '.tsx', '.jsx'].includes(ext);
 });
-export const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
-export const hasTailwind = pkg.dependencies?.tailwindcss || pkg.devDependencies?.tailwindcss;
+interface PackageJson {
+  name: string;
+  version: string;
+  scripts: Record<string, string | undefined>;
+  devDependencies: Record<string, string | undefined>;
+  dependencies?: Record<string, string | undefined>;
+  engines?: { node?: string };
+  packageManager?: string;
+  'lint-staged'?: Record<string, string[] | undefined>;
+  author?: string;
+}
+
+export const pkg = JSON.parse(
+  fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'),
+) as PackageJson;
+
+export const hasTailwind = !!(pkg.dependencies?.tailwindcss || pkg.devDependencies?.tailwindcss);

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.97] - 2026-03-07
+
+### Added
+
+- Added `PackageJson` interface and applied `satisfies` operator to the global `pkg` object in meta-tests, improving type safety and reliability when validating project configuration.
+
 ## [1.4.96] - 2026-03-07
 
 ### Added
