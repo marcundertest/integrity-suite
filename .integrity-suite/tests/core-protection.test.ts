@@ -3,23 +3,37 @@ import { execSync } from 'node:child_process';
 
 describe('Core Protection Suite', () => {
   it('Should protect core kit files from unauthorized modification @core-protection', async () => {
-    let changedFiles = '';
+    let originUrl = '';
     try {
-      changedFiles = execSync('git status --porcelain', { encoding: 'utf8', stdio: 'pipe' });
-    } catch (e: unknown) {
+      originUrl = execSync('git remote get-url origin', { encoding: 'utf8', stdio: 'pipe' }).trim();
+    } catch (e: unknown) {}
+
+    // If we are developing the official integrity-suite, modifications are allowed.
+    if (originUrl.includes('marcundertest/integrity-suite')) {
       return;
     }
 
-    const paths = changedFiles
+    let statusOutput = '';
+    try {
+      statusOutput = execSync('git status --porcelain', { encoding: 'utf8', stdio: 'pipe' });
+    } catch (e: unknown) {}
+
+    const changedFiles = statusOutput
       .split('\n')
       .filter(Boolean)
-      .map((line) => line.trim().slice(2).trim());
+      .map((line) => {
+        const status = line.slice(0, 2);
+        const path = line.slice(2).trim();
+        return { status, path };
+      });
 
-    paths.forEach((p) => {
-      if (p.startsWith('.integrity-suite/')) {
+    changedFiles.forEach(({ status, path }) => {
+      // Exclude reports as they are legitimate dynamic output even for consumers
+      if (path.startsWith('.integrity-suite/') && !path.includes('/reports/')) {
+        const action = status.includes('D') ? 'deleted' : 'modified/added';
         expect(
           false,
-          `Core kit protection: .integrity-suite/* is protected from modification: ${p}`,
+          `Core kit protection: .integrity-suite/* file ${action}: ${path}. Modifications to the integrity suite are strictly forbidden in downstream projects.`,
         ).toBe(true);
       }
     });

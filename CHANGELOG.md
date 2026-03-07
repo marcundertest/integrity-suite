@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.88] - 2026-03-07
+
+### Added
+
+- Enhanced `core-protection.test.ts` to a remote-aware verification system. The suite now permits modifications when origin remote points to the official repository (upstream development) while enforcing strict immutability in consuming projects.
+
 ## [1.4.87] - 2026-03-07
 
 ### Changed
