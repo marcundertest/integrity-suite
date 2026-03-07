@@ -2,7 +2,17 @@ import { describe, it, expect } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { execSync } from 'node:child_process';
-import { rootDir, codeFiles, pkg, allSourceFiles, testsDir, hasTailwind, getFiles } from './shared';
+import {
+  rootDir,
+  targetDirs,
+  codeFiles,
+  pkg,
+  allSourceFiles,
+  testsDirs,
+  srcDirs,
+  hasTailwind,
+  getFiles,
+} from './shared';
 
 describe('Level 4: Hygiene & Global Standards @hygiene', () => {
   it('Should forbid em dash in Spanish source code comments', () => {
@@ -18,7 +28,9 @@ describe('Level 4: Hygiene & Global Standards @hygiene', () => {
 
   it('Should enforce test file naming conventions', () => {
     const testFiles = allSourceFiles.filter(
-      (f) => f.startsWith(testsDir) && !f.includes(`${path.sep}reports${path.sep}`),
+      (file) =>
+        testsDirs.some((testsDir) => file.startsWith(testsDir)) &&
+        !file.includes(`${path.sep}reports${path.sep}`),
     );
     testFiles.forEach((file) => {
       const basename = path.basename(file);
@@ -35,10 +47,10 @@ describe('Level 4: Hygiene & Global Standards @hygiene', () => {
   });
 
   it('Should not use filesystem access in unit tests', () => {
-    const unitDir = path.join(rootDir, 'tests', 'unit') + path.sep;
+    const unitDirs = targetDirs.map((d: string) => path.join(d, 'tests', 'unit') + path.sep);
     allSourceFiles
-      .filter((f) => f.startsWith(unitDir))
-      .forEach((file) => {
+      .filter((file: string) => unitDirs.some((unitDir: string) => file.startsWith(unitDir)))
+      .forEach((file: string) => {
         const content = fs.readFileSync(file, 'utf8');
         expect(content, `fs access in unit test ${file}`).not.toMatch(/from ['"]node:fs['"]/);
         expect(content, `fs access in unit test ${file}`).not.toMatch(/require\(['"]node:fs['"]\)/);
@@ -106,7 +118,11 @@ describe('Level 4: Hygiene & Global Standards @hygiene', () => {
     const metaTestsDir = path.join(rootDir, '.integrity-suite', 'tests');
     const metaTestFiles = getFiles(metaTestsDir).filter((f) => /\.(test|spec)\.(ts|tsx)$/.test(f));
     const testFiles = [
-      ...allSourceFiles.filter((f) => f.startsWith(testsDir) && /\.(test|spec)\.(ts|tsx)$/.test(f)),
+      ...allSourceFiles.filter(
+        (file) =>
+          testsDirs.some((testsDir) => file.startsWith(testsDir)) &&
+          /\.(test|spec)\.(ts|tsx)$/.test(file),
+      ),
       ...metaTestFiles,
     ];
     testFiles.forEach((file) => {

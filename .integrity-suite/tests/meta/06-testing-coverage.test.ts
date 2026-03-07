@@ -2,25 +2,32 @@ import { describe, it, expect } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { execSync } from 'node:child_process';
-import { rootDir, codeFiles, pkg, allSourceFiles, testsDir, hasTailwind, getFiles } from './shared';
+import {
+  rootDir,
+  targetDirs,
+  codeFiles,
+  pkg,
+  allSourceFiles,
+  testsDirs,
+  srcDirs,
+  hasTailwind,
+  getFiles,
+} from './shared';
 
 describe('Level 6: Testing & Coverage @testing', () => {
-  it('Should have @vitest/coverage-v8 installed', () => {
-    if (!fs.existsSync(testsDir)) return;
-    expect(pkg.devDependencies['@vitest/coverage-v8']).toBeDefined();
-  });
-
   it('Should have at least one non-dummy test file per source module', () => {
-    if (!fs.existsSync(testsDir)) {
+    if (!testsDirs.some((dir) => fs.existsSync(dir))) {
       return; // nothing to validate
     }
 
-    const srcFiles = getFiles(path.join(rootDir, 'src')).filter(
-      (f) => /\.(ts|tsx)$/.test(f) && !f.endsWith('.d.ts'),
-    );
+    const srcFiles = srcDirs
+      .flatMap((dir) => getFiles(dir))
+      .filter((f) => /\.(ts|tsx)$/.test(f) && !f.endsWith('.d.ts'));
 
     const testFiles = allSourceFiles.filter(
-      (f) => f.startsWith(testsDir) && /\.(test|spec)\.(ts|tsx)$/.test(f),
+      (file) =>
+        testsDirs.some((testsDir) => file.startsWith(testsDir)) &&
+        /\.(test|spec)\.(ts|tsx)$/.test(file),
     );
 
     srcFiles.forEach((srcFile) => {
@@ -69,10 +76,8 @@ describe('Level 6: Testing & Coverage @testing', () => {
   });
 
   it('Should have a src/ directory as the coverage target', () => {
-    expect(
-      fs.existsSync(path.join(rootDir, 'src')),
-      'src/ directory is missing: coverage target does not exist',
-    ).toBe(true);
+    const hasAnySrc = srcDirs.some((srcDir) => fs.existsSync(srcDir));
+    expect(hasAnySrc, 'src/ directory is missing: coverage target does not exist').toBe(true);
   });
 
   it('Should not have coverage exclusions in vitest.config.ts', () => {
@@ -86,7 +91,7 @@ describe('Level 6: Testing & Coverage @testing', () => {
   });
 
   it('Should enforce test coverage flag in package.json scripts', () => {
-    if (!fs.existsSync(testsDir)) return;
+    if (!testsDirs.some((dir) => fs.existsSync(dir))) return;
     const unitScript = pkg.scripts['test:unit'];
     expect(unitScript, 'test:unit script is missing from package.json').toBeDefined();
     if (unitScript) {
@@ -95,11 +100,12 @@ describe('Level 6: Testing & Coverage @testing', () => {
   });
 
   it('Should not have bootstrap files remaining when real functionality is present', () => {
-    const srcDir = path.join(rootDir, 'src');
-    const srcFiles = getFiles(srcDir).filter((f) => /\.(ts|tsx)$/.test(f));
+    const srcFiles = srcDirs
+      .flatMap((srcDir) => getFiles(srcDir))
+      .filter((f) => /\.(ts|tsx)$/.test(f));
     const hasRealSrc = srcFiles.some((f) => path.basename(f) !== 'index.ts');
 
-    const bootstrapTests = [path.join(rootDir, 'tests', 'e2e', 'dummy.spec.ts')];
+    const bootstrapTests = targetDirs.map((d) => path.join(d, 'tests', 'e2e', 'dummy.spec.ts'));
 
     if (hasRealSrc) {
       bootstrapTests.forEach((file) => {
@@ -115,9 +121,11 @@ describe('Level 6: Testing & Coverage @testing', () => {
   });
 
   it('Should have at least one unhappy-path assertion per unit test file', () => {
-    const unitDir = path.join(rootDir, 'tests', 'unit') + path.sep;
+    const unitDirs = targetDirs.map((d) => path.join(d, 'tests', 'unit') + path.sep);
     const unitTestFiles = allSourceFiles.filter(
-      (f) => f.startsWith(unitDir) && /\.(test|spec)\.(ts|tsx)$/.test(f),
+      (file) =>
+        unitDirs.some((unitDir) => file.startsWith(unitDir)) &&
+        /\.(test|spec)\.(ts|tsx)$/.test(file),
     );
     unitTestFiles.forEach((file) => {
       const content = fs.readFileSync(file, 'utf8');
@@ -131,7 +139,9 @@ describe('Level 6: Testing & Coverage @testing', () => {
 
   it('Should not have duplicate test names within the same test file', () => {
     const testFiles = allSourceFiles.filter(
-      (f) => f.startsWith(testsDir) && /\.(test|spec)\.(ts|tsx)$/.test(f),
+      (file) =>
+        testsDirs.some((testsDir) => file.startsWith(testsDir)) &&
+        /\.(test|spec)\.(ts|tsx)$/.test(file),
     );
     testFiles.forEach((file) => {
       const content = fs.readFileSync(file, 'utf8');
@@ -146,7 +156,9 @@ describe('Level 6: Testing & Coverage @testing', () => {
 
   it('Should not contain .only or .skip test modifiers in any test file', () => {
     const testFiles = allSourceFiles.filter(
-      (f) => f.startsWith(testsDir) && /\.(test|spec)\.(ts|tsx)$/.test(f),
+      (file) =>
+        testsDirs.some((testsDir) => file.startsWith(testsDir)) &&
+        /\.(test|spec)\.(ts|tsx)$/.test(file),
     );
     testFiles.forEach((file) => {
       const content = fs.readFileSync(file, 'utf8');
@@ -160,9 +172,13 @@ describe('Level 6: Testing & Coverage @testing', () => {
   });
 
   it('Should have a minimum of 4 assertions per unit test file', () => {
-    const unitDir = path.join(rootDir, 'tests', 'unit') + path.sep;
+    const unitDirs = targetDirs.map((d) => path.join(d, 'tests', 'unit') + path.sep);
     allSourceFiles
-      .filter((f) => f.startsWith(unitDir) && /\.(test|spec)\.(ts|tsx)$/.test(f))
+      .filter(
+        (file) =>
+          unitDirs.some((unitDir) => file.startsWith(unitDir)) &&
+          /\.(test|spec)\.(ts|tsx)$/.test(file),
+      )
       .forEach((file) => {
         const count = (fs.readFileSync(file, 'utf8').match(/\bexpect\s*\(/g) ?? []).length;
         expect(

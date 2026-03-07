@@ -6,6 +6,59 @@ import { parse } from '@typescript-eslint/typescript-estree';
 // Node: module URL is evaluated relative to tests/meta. Need rootDir
 export const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
+export const isMonorepo = fs.existsSync(path.join(rootDir, 'pnpm-workspace.yaml'));
+
+function getWorkspacePackages(): string[] {
+  const workspacePath = path.join(rootDir, 'pnpm-workspace.yaml');
+  if (!fs.existsSync(workspacePath)) return [];
+
+  try {
+    const content = fs.readFileSync(workspacePath, 'utf8');
+    const packages: string[] = [];
+    let inPackages = false;
+
+    content.split('\n').forEach((line) => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('packages:')) {
+        inPackages = true;
+      } else if (inPackages && trimmed.startsWith('-')) {
+        const pattern = trimmed.replace(/^-/, '').trim().replace(/['"]/g, '');
+        packages.push(pattern);
+      } else if (inPackages && trimmed && !trimmed.startsWith(' ')) {
+        inPackages = false;
+      }
+    });
+
+    const dirs: string[] = [];
+    packages.forEach((pattern) => {
+      if (pattern.endsWith('/*')) {
+        const parent = path.join(rootDir, pattern.slice(0, -2));
+        if (fs.existsSync(parent) && fs.statSync(parent).isDirectory()) {
+          fs.readdirSync(parent).forEach((child) => {
+            const fullPath = path.join(parent, child);
+            if (
+              fs.statSync(fullPath).isDirectory() &&
+              fs.existsSync(path.join(fullPath, 'package.json'))
+            ) {
+              dirs.push(fullPath);
+            }
+          });
+        }
+      } else {
+        const fullPath = path.join(rootDir, pattern);
+        if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
+          dirs.push(fullPath);
+        }
+      }
+    });
+    return dirs;
+  } catch (e) {
+    return [];
+  }
+}
+
+export const targetDirs = isMonorepo ? getWorkspacePackages() : [rootDir];
+
 export const getFiles = (dir: string, allFiles: string[] = []) => {
   if (!fs.existsSync(dir)) return allFiles;
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -28,8 +81,9 @@ export const getFiles = (dir: string, allFiles: string[] = []) => {
   return allFiles;
 };
 
-export const allSourceFiles = getFiles(rootDir);
-export const testsDir = path.join(rootDir, 'tests') + path.sep;
+export const allSourceFiles = Array.from(new Set(targetDirs.flatMap((dir) => getFiles(dir))));
+export const srcDirs = targetDirs.map((d) => path.join(d, 'src') + path.sep);
+export const testsDirs = targetDirs.map((d) => path.join(d, 'tests') + path.sep);
 export const codeFiles = allSourceFiles.filter((f) => {
   const ext = path.extname(f);
   return ['.ts', '.js', '.tsx', '.jsx'].includes(ext);

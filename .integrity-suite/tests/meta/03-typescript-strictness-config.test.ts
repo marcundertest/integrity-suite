@@ -7,7 +7,8 @@ import {
   codeFiles,
   pkg,
   allSourceFiles,
-  testsDir,
+  testsDirs,
+  srcDirs,
   hasTailwind,
   parse,
   getNodesByType,
@@ -40,7 +41,7 @@ describe('Level 3: TypeScript Strictness & Config @typescript', () => {
   });
 
   it('Should be a TypeScript project and forbid bypass keywords', () => {
-    if (!fs.existsSync(testsDir)) return;
+    if (!testsDirs.some((dir) => fs.existsSync(dir))) return;
 
     expect(fs.existsSync(path.join(rootDir, 'tsconfig.json'))).toBe(true);
     codeFiles.forEach((file) => {
@@ -58,13 +59,12 @@ describe('Level 3: TypeScript Strictness & Config @typescript', () => {
   });
 
   it('Should not have exports in src/ that are never imported anywhere', () => {
-    if (!fs.existsSync(testsDir)) return;
+    if (!testsDirs.some((dir) => fs.existsSync(dir))) return;
 
-    const srcDir = path.join(rootDir, 'src') + path.sep;
-    const srcFiles = codeFiles.filter((f) => f.startsWith(srcDir));
+    const srcFiles = codeFiles.filter((file) => srcDirs.some((srcDir) => file.startsWith(srcDir)));
     const allFilesContent = [
       ...codeFiles,
-      ...allSourceFiles.filter((f) => f.startsWith(testsDir)),
+      ...allSourceFiles.filter((file) => testsDirs.some((testsDir) => file.startsWith(testsDir))),
     ].map((f) => ({
       path: f,
       content: fs.readFileSync(f, 'utf8'),
@@ -108,9 +108,8 @@ describe('Level 3: TypeScript Strictness & Config @typescript', () => {
   });
 
   it('Should forbid non-null assertion operator in src/', () => {
-    const srcDir = path.join(rootDir, 'src') + path.sep;
     codeFiles
-      .filter((f) => f.startsWith(srcDir))
+      .filter((file) => srcDirs.some((srcDir) => file.startsWith(srcDir)))
       .forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
         expect(
@@ -121,9 +120,8 @@ describe('Level 3: TypeScript Strictness & Config @typescript', () => {
   });
 
   it('Should forbid numeric enums in src/', () => {
-    const srcDir = path.join(rootDir, 'src') + path.sep;
     codeFiles
-      .filter((f) => f.startsWith(srcDir))
+      .filter((file) => srcDirs.some((srcDir) => file.startsWith(srcDir)))
       .forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
         const ast = parse(content);
@@ -145,9 +143,8 @@ describe('Level 3: TypeScript Strictness & Config @typescript', () => {
   });
 
   it('Should forbid double-assertion casting (as unknown as Type) in src/', () => {
-    const srcDir = path.join(rootDir, 'src') + path.sep;
     codeFiles
-      .filter((f) => f.startsWith(srcDir))
+      .filter((file) => srcDirs.some((srcDir) => file.startsWith(srcDir)))
       .forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
         expect(
@@ -158,7 +155,13 @@ describe('Level 3: TypeScript Strictness & Config @typescript', () => {
   });
 
   it('Should type catch clause errors as unknown, not untyped in src/ and tests/', () => {
-    const filesToCheck = [...codeFiles.filter((f) => f.includes('/src/') || f.includes('/tests/'))];
+    const filesToCheck = [
+      ...codeFiles.filter((file) => {
+        const inSrc = srcDirs.some((srcDir) => file.startsWith(srcDir));
+        const inTests = testsDirs.some((testsDir) => file.startsWith(testsDir));
+        return inSrc || inTests;
+      }),
+    ];
     filesToCheck.forEach((file) => {
       const content = fs.readFileSync(file, 'utf8');
       const ast = parse(content);

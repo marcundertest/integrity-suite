@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { execSync } from 'node:child_process';
-import { rootDir, codeFiles, pkg, allSourceFiles, testsDir, hasTailwind } from './shared';
+import { rootDir, codeFiles, pkg, allSourceFiles, testsDirs, hasTailwind } from './shared';
 
 describe('Level 7: Dependency Hygiene @dependencies', () => {
   it('Should not have dependencies that belong in devDependencies', () => {
@@ -25,7 +25,7 @@ describe('Level 7: Dependency Hygiene @dependencies', () => {
     expect(pkg.packageManager, 'packageManager field is missing').toBeDefined();
     expect(pkg.packageManager).toMatch(/^pnpm@\d+\.\d+\.\d+$/);
 
-    const [, expectedVersion] = pkg.packageManager.split('@');
+    const [, expectedVersion] = pkg.packageManager!.split('@');
     try {
       const installedVersion = execSync('pnpm --version').toString().trim();
       expect(

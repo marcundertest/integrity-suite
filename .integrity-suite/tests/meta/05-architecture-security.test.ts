@@ -3,7 +3,16 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { execSync } from 'node:child_process';
 import * as ts from 'typescript';
-import { rootDir, codeFiles, pkg, allSourceFiles, testsDir, hasTailwind, getFiles } from './shared';
+import {
+  rootDir,
+  codeFiles,
+  pkg,
+  allSourceFiles,
+  testsDirs,
+  srcDirs,
+  hasTailwind,
+  getFiles,
+} from './shared';
 
 describe('Level 5: Architecture & Security @security', () => {
   it('Should have a .env.example documenting required variables', () => {
@@ -16,9 +25,8 @@ describe('Level 5: Architecture & Security @security', () => {
   });
 
   it('Should forbid process.exit() in src/', () => {
-    const srcDir = path.join(rootDir, 'src') + path.sep;
     codeFiles
-      .filter((f) => f.startsWith(srcDir))
+      .filter((file) => srcDirs.some((srcDir) => file.startsWith(srcDir)))
       .forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
         expect(content, `process.exit() in ${file}`).not.toMatch(/process\.exit\s*\(/);
@@ -47,22 +55,22 @@ describe('Level 5: Architecture & Security @security', () => {
   });
 
   it('Should limit file size to 300 lines in src/', () => {
-    const srcDir = path.join(rootDir, 'src');
-    if (fs.existsSync(srcDir)) {
-      getFiles(srcDir).forEach((file) => {
-        const ext = path.extname(file);
-        if (!['.ts', '.tsx', '.js', '.jsx'].includes(ext)) return;
-        const content = fs.readFileSync(file, 'utf8');
-        const lineCount = content.split('\n').length;
-        expect(lineCount, `File ${file} exceeds 300 lines`).toBeLessThanOrEqual(300);
-      });
-    }
+    srcDirs.forEach((srcDir) => {
+      if (fs.existsSync(srcDir)) {
+        getFiles(srcDir).forEach((file) => {
+          const ext = path.extname(file);
+          if (!['.ts', '.tsx', '.js', '.jsx'].includes(ext)) return;
+          const content = fs.readFileSync(file, 'utf8');
+          const lineCount = content.split('\n').length;
+          expect(lineCount, `File ${file} exceeds 300 lines`).toBeLessThanOrEqual(300);
+        });
+      }
+    });
   });
 
   it('Should not have functions with more than 4 parameters in src/', () => {
-    const srcDir = path.join(rootDir, 'src') + path.sep;
     codeFiles
-      .filter((f) => f.startsWith(srcDir))
+      .filter((file) => srcDirs.some((srcDir) => file.startsWith(srcDir)))
       .forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
         const sourceFile = ts.createSourceFile(file, content, ts.ScriptTarget.Latest, true);
@@ -159,7 +167,6 @@ describe('Level 5: Architecture & Security @security', () => {
   });
 
   it('Should not instantiate concrete classes inside business logic functions in src/', () => {
-    const srcDir = path.join(rootDir, 'src') + path.sep;
     const builtIns = [
       'Date',
       'Map',
@@ -182,7 +189,7 @@ describe('Level 5: Architecture & Security @security', () => {
       'g',
     );
     codeFiles
-      .filter((f) => f.startsWith(srcDir))
+      .filter((file) => srcDirs.some((srcDir) => file.startsWith(srcDir)))
       .forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
         const matches = [...content.matchAll(pattern)];
@@ -205,8 +212,9 @@ describe('Level 5: Architecture & Security @security', () => {
 
   it('Should ensure all tests are cross-platform (Meta-test)', () => {
     allSourceFiles.forEach((file) => {
-      const parts = file.split(path.sep);
-      if (!parts.includes('tests')) return;
+      const isTestFile = testsDirs.some((testsDir) => file.startsWith(testsDir));
+      if (!isTestFile) return;
+
       const metaTestPath = path.join(rootDir, 'tests', 'meta', 'integrity-suite.test.ts');
       if (file === metaTestPath) return;
 
@@ -235,9 +243,8 @@ describe('Level 5: Architecture & Security @security', () => {
   });
 
   it('Should not use eval() or dynamic new Function() in src/', () => {
-    const srcDir = path.join(rootDir, 'src') + path.sep;
     codeFiles
-      .filter((f) => f.startsWith(srcDir))
+      .filter((file) => srcDirs.some((srcDir) => file.startsWith(srcDir)))
       .forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
         expect(content, `eval() in ${file}: arbitrary code execution risk`).not.toMatch(
@@ -263,9 +270,8 @@ describe('Level 5: Architecture & Security @security', () => {
   });
 
   it('Should not throw string literals in src/', () => {
-    const srcDir = path.join(rootDir, 'src') + path.sep;
     codeFiles
-      .filter((f) => f.startsWith(srcDir))
+      .filter((file) => srcDirs.some((srcDir) => file.startsWith(srcDir)))
       .forEach((file) => {
         const content = fs.readFileSync(file, 'utf8');
         expect(
@@ -276,15 +282,18 @@ describe('Level 5: Architecture & Security @security', () => {
   });
 
   it('Should not have circular imports in src/', () => {
-    try {
-      execSync('pnpm exec madge --circular --extensions ts src/', {
-        cwd: rootDir,
-        encoding: 'utf8',
-        stdio: 'pipe',
-      });
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      expect(false, `Circular imports detected:\n${msg}`).toBe(true);
-    }
+    srcDirs.forEach((srcDir) => {
+      if (!fs.existsSync(srcDir)) return;
+      try {
+        execSync(`pnpm exec madge --circular --extensions ts ${srcDir}`, {
+          cwd: rootDir,
+          encoding: 'utf8',
+          stdio: 'pipe',
+        });
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        expect(false, `Circular imports detected in ${srcDir}:\n${msg}`).toBe(true);
+      }
+    });
   });
 });
