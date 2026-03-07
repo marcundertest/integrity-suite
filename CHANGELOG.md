@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file. This file i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.93] - 2026-03-07
+
+### Changed
+
+- Pinned all `devDependencies` in `package.json` to exact versions to ensure strict reproducibility and prevent unexpected breaking changes from minor version updates.
+
 ## [1.4.92] - 2026-03-07
 
 ### Security
